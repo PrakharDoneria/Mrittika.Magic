@@ -7,6 +7,7 @@ const config = {
   orders: { table: "orders", title: "Orders", copy: "Customer orders and fulfillment status from your store." },
   categories: { table: "categories", title: "Categories", copy: "Organize products into collections." },
   customers: { table: "profiles", title: "Customers", copy: "Registered customer profiles from Supabase Auth." },
+  reviews: { table: "reviews", title: "Reviews", copy: "Customer reviews for products and publish status." },
 } as const;
 
 export function generateStaticParams() {

@@ -19,10 +19,11 @@ export default function ReviewSection({ productId }: { productId: string }) {
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     const { error } = await createClient().from("reviews").insert({ product_id: productId, name: form.get("name"), rating: Number(form.get("rating")), body: form.get("body") });
     if (error) setStatus("We could not submit your review. Please try again.");
-    else { setStatus("Thank you - your review is awaiting approval."); event.currentTarget.reset(); }
+    else { setStatus("Thank you - your review is awaiting approval."); formElement.reset(); }
   }
 
   return <section className="reviews-section">

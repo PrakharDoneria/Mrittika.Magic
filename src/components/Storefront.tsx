@@ -24,6 +24,7 @@ function useReveal() {
 /* ─── SiteChrome ──────────────────────────────────────── */
 export function SiteChrome({ children, categories = [], showLadybug = false }: { children: React.ReactNode; categories?: Category[]; showLadybug?: boolean }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [categoriesOpen, setCategoriesOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const [scrolled, setScrolled] = useState(false);
   useReveal();
@@ -41,6 +42,11 @@ export function SiteChrome({ children, categories = [], showLadybug = false }: {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  const closeDrawer = () => {
+    setMenuOpen(false);
+    setCategoriesOpen(false);
+  };
+
   return (
     <div className="site-shell">
       {/* Header */}
@@ -52,21 +58,26 @@ export function SiteChrome({ children, categories = [], showLadybug = false }: {
         <Link href="/" className="brand"><img src="/logo/logo.jpeg" alt="Mrittika Magic" /></Link>
 
         <nav className={menuOpen ? "main-nav open" : "main-nav"}>
-          <button className="drawer-close" onClick={() => setMenuOpen(false)} aria-label="Close navigation"><X size={20} /></button>
-          <Link href="/shop"        onClick={() => setMenuOpen(false)}>Shop all</Link>
-          <Link href="/collections" onClick={() => setMenuOpen(false)}>Collections</Link>
+          <button className="drawer-close" onClick={closeDrawer} aria-label="Close navigation"><X size={20} /></button>
+          <Link href="/shop"        onClick={closeDrawer}>Shop all</Link>
+          <Link href="/collections" onClick={closeDrawer}>Collections</Link>
           {categories.length > 0 && (
-            <div className="nav-dropdown">
-              <button type="button" className="nav-dropdown-trigger">
+            <div className={`nav-dropdown ${categoriesOpen ? "is-expanded" : ""}`}>
+              <button
+                type="button"
+                className="nav-dropdown-trigger"
+                onClick={() => setCategoriesOpen(!categoriesOpen)}
+                aria-expanded={categoriesOpen}
+              >
                 <span>Categories</span>
-                <ChevronDown size={13} className="nav-chevron" />
+                <ChevronDown size={14} className={`nav-chevron ${categoriesOpen ? "rotate-180" : ""}`} />
               </button>
-              <div className="nav-dropdown-menu">
+              <div className={`nav-dropdown-menu ${categoriesOpen ? "is-visible" : ""}`}>
                 {categories.map((category) => (
                   <Link
                     key={category.id}
                     href={`/shop?category=${encodeURIComponent(category.name)}`}
-                    onClick={() => setMenuOpen(false)}
+                    onClick={closeDrawer}
                   >
                     {category.name}
                   </Link>
@@ -74,8 +85,8 @@ export function SiteChrome({ children, categories = [], showLadybug = false }: {
               </div>
             </div>
           )}
-          <Link href="/about"       onClick={() => setMenuOpen(false)}>Our story</Link>
-          <Link href="/journal"     onClick={() => setMenuOpen(false)}>Journal</Link>
+          <Link href="/about"       onClick={closeDrawer}>Our story</Link>
+          <Link href="/journal"     onClick={closeDrawer}>Journal</Link>
         </nav>
 
         <div className="header-actions">
@@ -110,13 +121,10 @@ export function SiteChrome({ children, categories = [], showLadybug = false }: {
           <Link href="/return-policy">Return policy</Link>
         </div>
         <div>
-          <strong>Stay in the loop</strong>
-          <p>Get first dibs on new drops and thoughtful notes from the studio.</p>
-          <form className="footer-form" onSubmit={(e) => e.preventDefault()}>
-            <input type="email" required placeholder="Your email address" />
-            <button aria-label="Subscribe"><ArrowRight size={18} /></button>
-          </form>
-          <p style={{ marginTop: "20px", fontSize: "11px", opacity: .5, letterSpacing: ".08em" }}>
+          <p style={{ marginTop: "4px", fontSize: "12px", opacity: .65, letterSpacing: ".04em" }}>
+            Handcrafted wearable art, made in small batches with love.
+          </p>
+          <p style={{ marginTop: "16px", fontSize: "11px", opacity: .5, letterSpacing: ".08em" }}>
             © {new Date().getFullYear()} Mrittika Magic. Thoughtfully made.
           </p>
         </div>

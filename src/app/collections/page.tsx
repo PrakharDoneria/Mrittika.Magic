@@ -29,6 +29,19 @@ export default async function CollectionsPage() {
         <p>Little worlds of color, carefully collected and made by hand.</p>
       </section>
 
+      {/* Quick Category Chips */}
+      <div className="collections-quick-bar" aria-label="Quick Category Filter">
+        {(categories.length > 0 ? categories : fallbackCollections).map((cat) => (
+          <Link
+            key={cat.id}
+            href={`/shop?category=${encodeURIComponent(cat.name)}`}
+            className="collections-quick-chip"
+          >
+            <span>{cat.name}</span>
+          </Link>
+        ))}
+      </div>
+
       {/* Collections Grid */}
       <section className="collection-grid">
         {(categories.length > 0 ? categories : fallbackCollections).map((category, index) => {
