@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, BadgeCheck, Flower2, Gem, Gift, HandHeart } from "lucide-react";
 import { getCategories, getProducts } from "@/data/store";
 import { ProductCard, SiteChrome } from "@/components/Storefront";
+import InstagramFeed from "@/components/InstagramFeed";
 
 export default async function Home() {
   const [{ data: products }, { data: categories }] = await Promise.all([getProducts({ limit: 4 }), getCategories()]);
@@ -184,6 +185,9 @@ export default async function Home() {
           ))}
         </div>
       </section>
+
+      {/* ── INSTAGRAM ─────────────────────────────────────── */}
+      <InstagramFeed />
 
       {/* ── SIGN-UP BANNER ────────────────────────────────── */}
       <section className="home-banner reveal" style={{ margin: "0 40px 110px" }}>
