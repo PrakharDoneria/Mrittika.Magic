@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowRight, Camera, Flower2, Heart, Menu, Search, ShoppingBag, UserRound, X } from "lucide-react";
-import { createClient } from "@/lib/supabase/browser";
-import type { CartItem } from "@/data/types";
+import { ArrowRight, Camera, ChevronDown, Flower2, Heart, Menu, Search, ShoppingBag, Star, UserRound, X } from "lucide-react";
+import type { CartItem, Category } from "@/data/types";
+import { productPath } from "@/data/product-path";
 
 const money = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 });
 
@@ -22,11 +22,10 @@ function useReveal() {
 }
 
 /* ─── SiteChrome ──────────────────────────────────────── */
-export function SiteChrome({ children }: { children: React.ReactNode }) {
+export function SiteChrome({ children, categories = [], showLadybug = false }: { children: React.ReactNode; categories?: Category[]; showLadybug?: boolean }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const [scrolled, setScrolled] = useState(false);
-  const [signedIn, setSignedIn] = useState(false);
   useReveal();
 
   useEffect(() => {
@@ -37,11 +36,6 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => setSignedIn(Boolean(data.user)));
-  }, []);
-
-  useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -49,12 +43,6 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="site-shell">
-      {/* Promo bar */}
-      {!signedIn && <div className="promo-bar">
-        <span>New here? Create an account and get 5% off</span>
-        <Link href="/account?mode=signup">Claim your welcome code <ArrowRight size={12} /></Link>
-      </div>}
-
       {/* Header */}
       <header className="site-header" style={scrolled ? { boxShadow: "0 3px 0 var(--pink), 0 6px 24px #2b1d2214" } : undefined}>
         <button className="icon-button mobile-menu" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle navigation">
@@ -67,6 +55,25 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
           <button className="drawer-close" onClick={() => setMenuOpen(false)} aria-label="Close navigation"><X size={20} /></button>
           <Link href="/shop"        onClick={() => setMenuOpen(false)}>Shop all</Link>
           <Link href="/collections" onClick={() => setMenuOpen(false)}>Collections</Link>
+          {categories.length > 0 && (
+            <div className="nav-dropdown">
+              <button type="button" className="nav-dropdown-trigger">
+                <span>Categories</span>
+                <ChevronDown size={13} className="nav-chevron" />
+              </button>
+              <div className="nav-dropdown-menu">
+                {categories.map((category) => (
+                  <Link
+                    key={category.id}
+                    href={`/shop?category=${encodeURIComponent(category.name)}`}
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    {category.name}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
           <Link href="/about"       onClick={() => setMenuOpen(false)}>Our story</Link>
           <Link href="/journal"     onClick={() => setMenuOpen(false)}>Journal</Link>
         </nav>
@@ -82,20 +89,7 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      {/* Cute sidebar */}
-      <button className="cute-sidebar" onClick={() => setMenuOpen(true)}>
-        <span>open the little menu</span>
-        <Flower2 size={16} />
-        <span>find your next favorite</span>
-      </button>
-      <nav className={`mobile-bottom-nav${scrolled ? " is-scrolled" : ""}`} aria-label="Quick navigation">
-        <Link href="/"><Flower2 size={18} /><span>Home</span></Link>
-        <Link href="/shop"><Search size={18} /><span>Shop</span></Link>
-        <Link href="/wishlist"><Heart size={18} /><span>Saved</span></Link>
-        <Link href="/cart" className="mobile-cart-link"><ShoppingBag size={19} />{cartCount > 0 && <b>{cartCount}</b>}<span>Cart</span></Link>
-        <Link href="/account"><UserRound size={18} /><span>Account</span></Link>
-      </nav>
-
+      {showLadybug && <div className="ladybug" aria-hidden="true"><span>●</span><i>••</i></div>}
       {children}
 
       {/* Footer */}
@@ -117,7 +111,7 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
         </div>
         <div>
           <strong>Stay in the loop</strong>
-          <p>Get 5% off your first order plus first dibs on new drops.</p>
+          <p>Get first dibs on new drops and thoughtful notes from the studio.</p>
           <form className="footer-form" onSubmit={(e) => e.preventDefault()}>
             <input type="email" required placeholder="Your email address" />
             <button aria-label="Subscribe"><ArrowRight size={18} /></button>
@@ -134,6 +128,7 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
 
 /* ─── ProductCard ─────────────────────────────────────── */
 export function ProductCard({ product, onAdd }: { product: import("@/data/types").Product; onAdd?: () => void }) {
+  const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
 
   function addProduct(event: React.MouseEvent<HTMLButtonElement>) {
@@ -142,34 +137,74 @@ export function ProductCard({ product, onAdd }: { product: import("@/data/types"
     else {
       const stored = JSON.parse(localStorage.getItem("mrittika-cart") ?? "[]") as CartItem[];
       const existing = stored.find((item) => item.id === product.id);
+      const currentQty = existing?.quantity ?? 0;
+      if (currentQty >= product.stock) {
+        setAdded(true);
+        window.setTimeout(() => setAdded(false), 1400);
+        return;
+      }
+      const addQty = Math.min(qty, product.stock - currentQty);
       const nextItems = existing
-        ? stored.map((item) => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item)
-        : [...stored, { ...product, quantity: 1 }];
+        ? stored.map((item) => item.id === product.id ? { ...item, quantity: item.quantity + addQty } : item)
+        : [...stored, { ...product, quantity: addQty }];
       const nextCount = nextItems.reduce((total, item) => total + item.quantity, 0);
       localStorage.setItem("mrittika-cart", JSON.stringify(nextItems));
       localStorage.setItem("mrittika-cart-count", String(nextCount));
       window.dispatchEvent(new Event("mrittika-cart-updated"));
     }
     setAdded(true);
+    setQty(1);
     setTimeout(() => setAdded(false), 1400);
   }
 
   return (
     <article className="product-card reveal">
-      <Link href={`/shop/${product.id}`} className="product-visual">
-        <div className="product-image" style={{ backgroundImage: `url('${product.images[0] ?? ""}')` }} />
+      <div className="product-visual">
+        <Link href={productPath(product)} aria-label={`View ${product.title}`} className="product-image-link">
+          <div className="product-image" style={{ backgroundImage: `url('${product.images[0] ?? ""}')` }} />
+        </Link>
         {product.stock === 0 && <span className="product-tag">sold out</span>}
-        <button
-          onClick={addProduct}
-          className={`quick-add${added ? " is-added" : ""}`}
-          disabled={product.stock === 0}
-          style={added ? { background: "var(--green)", color: "#fff", borderColor: "var(--green)" } : undefined}
-        >
-          {added ? "✓ Added!" : "Add to bag"}
-        </button>
-      </Link>
-      <Link href={`/shop/${product.id}`} className="product-name">{product.title}</Link>
+
+        {/* Quick-add row: qty stepper + add button */}
+        <div className="quick-add-row">
+          <div className="quick-add-qty" aria-label="Quantity">
+            <button
+              type="button"
+              onClick={(e) => { e.preventDefault(); setQty((v) => Math.max(1, v - 1)); }}
+              aria-label="Decrease"
+              disabled={qty <= 1}
+            >−</button>
+            <span>{qty}</span>
+            <button
+              type="button"
+              onClick={(e) => { e.preventDefault(); setQty((v) => Math.min(product.stock, v + 1)); }}
+              aria-label="Increase"
+              disabled={qty >= product.stock}
+            >+</button>
+          </div>
+          <button
+            onClick={addProduct}
+            className={`quick-add${added ? " is-added" : ""}`}
+            disabled={product.stock === 0}
+            style={added ? { background: "var(--green)", color: "#fff", borderColor: "var(--green)" } : undefined}
+          >
+            {added ? "✓ Added!" : "Add to bag"}
+          </button>
+        </div>
+      </div>
+      <Link href={productPath(product)} className="product-name">{product.title}</Link>
       <span className="product-meta">{product.category ?? "Mrittika Magic"}</span>
+      {product.review_count ? (
+        <span
+          className="product-rating"
+          aria-label={`${product.rating?.toFixed(1)} out of 5 from ${product.review_count} reviews`}
+        >
+          <span>{Array.from({ length: 5 }, (_, i) => (
+            <Star key={i} size={13} fill={i < Math.round(product.rating ?? 0) ? "currentColor" : "none"} />
+          ))}</span>
+          {product.rating?.toFixed(1)} ({product.review_count})
+        </span>
+      ) : null}
       <strong>{money.format(product.price)}</strong>
     </article>
   );

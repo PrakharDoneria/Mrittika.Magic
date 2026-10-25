@@ -1,17 +1,20 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Search, SlidersHorizontal } from "lucide-react";
-import type { Product } from "@/data/types";
+import { useRouter } from "next/navigation";
+import { ChevronLeft, ChevronRight, Search, SlidersHorizontal } from "lucide-react";
+import type { Category, Product } from "@/data/types";
 import { ProductCard } from "./Storefront";
 
-export default function ShopView({ products }: { products: Product[] }) {
+export default function ShopView({ products, categories: supabaseCategories, page, total, selectedCategory }: { products: Product[]; categories: Category[]; page: number; total: number; selectedCategory?: string }) {
   const [query, setQuery] = useState("");
-  const [category, setCategory] = useState("All");
-  const categories = ["All", ...Array.from(new Set(products.map((p) => p.category).filter(Boolean) as string[]))];
+  const [category, setCategory] = useState(selectedCategory ?? "All");
+  const router = useRouter();
+  const activeCategory = selectedCategory ?? category;
+  const categories = ["All", ...supabaseCategories.map((item) => item.name)];
   const filtered = useMemo(
-    () => products.filter((p) => (category === "All" || p.category === category) && p.title.toLowerCase().includes(query.toLowerCase())),
-    [category, products, query]
+    () => products.filter((p) => p.title.toLowerCase().includes(query.toLowerCase())),
+    [products, query]
   );
 
   return (
@@ -42,8 +45,11 @@ export default function ShopView({ products }: { products: Product[] }) {
             {categories.map((item) => (
               <button
                 key={item}
-                className={category === item ? "active" : ""}
-                onClick={() => setCategory(item)}
+                className={activeCategory === item ? "active" : ""}
+                onClick={() => {
+                  setCategory(item);
+                  router.push(item === "All" ? "/shop" : `/shop?category=${encodeURIComponent(item)}`);
+                }}
               >
                 {item}
               </button>
@@ -64,6 +70,11 @@ export default function ShopView({ products }: { products: Product[] }) {
             <ProductCard product={product} key={product.id} />
           ))}
         </div>
+        {total > 12 && <nav className="pagination" aria-label="Product pages">
+          <a aria-disabled={page === 1} href={`/shop?page=${page - 1}${activeCategory !== "All" ? `&category=${encodeURIComponent(activeCategory)}` : ""}`}><ChevronLeft size={16} /></a>
+          <span>Page {page} of {Math.ceil(total / 12)}</span>
+          <a aria-disabled={page >= Math.ceil(total / 12)} href={`/shop?page=${page + 1}${activeCategory !== "All" ? `&category=${encodeURIComponent(activeCategory)}` : ""}`}><ChevronRight size={16} /></a>
+        </nav>}
 
         {/* Empty */}
         {filtered.length === 0 && (

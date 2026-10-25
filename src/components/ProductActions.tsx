@@ -28,8 +28,14 @@ export default function ProductActions({ product }: { product: Product }) {
 
   function addToCart() {
     const stored = JSON.parse(localStorage.getItem("mrittika-cart") ?? "[]") as CartItem[];
-    const next = stored.some((item) => item.id === product.id)
-      ? stored.map((item) => item.id === product.id ? { ...item, quantity: item.quantity + quantity } : item)
+    const existing = stored.find((item) => item.id === product.id);
+    if ((existing?.quantity ?? 0) >= product.stock) {
+      setAdded(true);
+      window.setTimeout(() => setAdded(false), 1400);
+      return;
+    }
+    const next = existing
+      ? stored.map((item) => item.id === product.id ? { ...item, quantity: Math.min(product.stock, item.quantity + quantity) } : item)
       : [...stored, { ...product, quantity }];
     localStorage.setItem("mrittika-cart", JSON.stringify(next));
     localStorage.setItem("mrittika-cart-count", String(next.reduce((sum, item) => sum + item.quantity, 0)));

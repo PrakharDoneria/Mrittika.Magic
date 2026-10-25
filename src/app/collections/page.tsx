@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { SiteChrome } from "@/components/Storefront";
-import { getCategories } from "@/data/store";
+import { getCategories, getProducts } from "@/data/store";
 
 const defaultCategoryImages = [
   "/media/necklace.jpeg",
@@ -18,7 +18,7 @@ const fallbackCollections = [
 ];
 
 export default async function CollectionsPage() {
-  const { data: categories } = await getCategories();
+  const [{ data: categories }, { count: productCount }] = await Promise.all([getCategories(), getProducts({ limit: 1 })]);
 
   return (
     <SiteChrome>
@@ -58,7 +58,7 @@ export default async function CollectionsPage() {
       </section>
 
       {/* Studio video banner */}
-      <section style={{ maxWidth: 1200, margin: "0 auto 80px", padding: "0 30px" }}>
+      {!productCount && <section style={{ maxWidth: 1200, margin: "0 auto 80px", padding: "0 30px" }}>
         <div style={{
           display: "grid",
           gridTemplateColumns: "1.1fr 0.9fr",
@@ -91,7 +91,7 @@ export default async function CollectionsPage() {
             </Link>
           </div>
         </div>
-      </section>
+      </section>}
 
       {/* Bottom CTA */}
       <section style={{ textAlign: "center", padding: "40px 24px 120px" }}>

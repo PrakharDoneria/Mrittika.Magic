@@ -34,9 +34,23 @@ create table if not exists public.products (
   category text,
   images text[] not null default '{}',
   stock integer not null default 0 check (stock >= 0),
+  sku text unique,
+  material text,
+  dimensions text,
+  weight numeric(10,2) check (weight is null or weight >= 0),
+  care_instructions text,
+  is_featured boolean not null default false,
   is_published boolean not null default false,
   created_at timestamptz not null default now()
 );
+
+alter table public.products add column if not exists sku text;
+alter table public.products add column if not exists material text;
+alter table public.products add column if not exists dimensions text;
+alter table public.products add column if not exists weight numeric(10,2);
+alter table public.products add column if not exists care_instructions text;
+alter table public.products add column if not exists is_featured boolean not null default false;
+create unique index if not exists products_sku_unique on public.products (sku) where sku is not null;
 
 create table if not exists public.carts (
   user_id uuid primary key references auth.users(id) on delete cascade,
@@ -70,6 +84,16 @@ create table if not exists public.coupons (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.reviews (
+  id uuid primary key default gen_random_uuid(),
+  product_id uuid not null references public.products(id) on delete cascade,
+  name text not null,
+  rating integer not null check (rating between 1 and 5),
+  body text not null,
+  is_published boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
 insert into storage.buckets (id, name, public)
 values ('media', 'media', true)
 on conflict (id) do update set public = excluded.public;
@@ -80,6 +104,7 @@ alter table public.products enable row level security;
 alter table public.carts enable row level security;
 alter table public.orders enable row level security;
 alter table public.coupons enable row level security;
+alter table public.reviews enable row level security;
 
 drop policy if exists "Published products are public" on public.products;
 drop policy if exists "Categories are public" on public.categories;
@@ -90,6 +115,8 @@ drop policy if exists "Users manage own cart" on public.carts;
 drop policy if exists "Users read own orders" on public.orders;
 create policy "Published products are public" on public.products for select using (is_published = true);
 create policy "Categories are public" on public.categories for select using (true);
+create policy "Published reviews are public" on public.reviews for select using (is_published = true);
+create policy "Guests can submit reviews" on public.reviews for insert with check (char_length(name) between 1 and 80 and char_length(body) between 10 and 2000);
 create policy "Users read own profile" on public.profiles for select using (auth.uid() = id);
 create policy "Users create own profile" on public.profiles for insert with check (auth.uid() = id);
 create policy "Users update own profile" on public.profiles for update using (auth.uid() = id) with check (auth.uid() = id);

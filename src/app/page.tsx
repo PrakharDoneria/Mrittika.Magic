@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { ArrowRight, BadgeCheck, Flower2, Gem, Gift, HandHeart } from "lucide-react";
-import { getProducts } from "@/data/store";
+import { getCategories, getProducts } from "@/data/store";
 import { ProductCard, SiteChrome } from "@/components/Storefront";
 
 export default async function Home() {
-  const { data: products } = await getProducts();
+  const [{ data: products }, { data: categories }] = await Promise.all([getProducts({ limit: 4 }), getCategories()]);
 
   return (
-    <SiteChrome>
+    <SiteChrome categories={categories} showLadybug>
       {/* ── HERO ─────────────────────────────────────────── */}
       <section className="hero-home">
         <div className="hero-copy">
@@ -59,26 +59,26 @@ export default async function Home() {
       {/* ── INTRO / WHY US ───────────────────────────────── */}
       <section className="intro-section reveal">
         <Flower2 size={26} />
-        <p className="eyebrow">our edit for you</p>
-        <h2>Curated essentials for <i>refined living.</i></h2>
-        <p>Handpicked little treasures for a life that feels more like you. Find a new favorite, or a gift for someone who deserves one.</p>
+        <p className="eyebrow">made slowly, loved deeply</p>
+        <h2>Each item is handcrafted<br /><i>in small batches.</i></h2>
+        <p>Celebrating the beautiful textures and joyful imperfections of artisan making. Every piece carries a little bit of the hands that made it.</p>
 
         {/* Why us cards */}
         <div className="why-us-grid">
           <div className="why-card">
             <span className="why-card-icon"><Flower2 /></span>
-            <h3>Holiday Vibes</h3>
-            <p>Every piece is designed to bring color and joy into your everyday rituals.</p>
+            <h3>Small Batches</h3>
+            <p>Every piece is made in limited runs — no mass production, no two quite the same.</p>
           </div>
           <div className="why-card">
             <span className="why-card-icon"><BadgeCheck /></span>
-            <h3>Quality</h3>
-            <p>We carefully craft and curate products where quality is our top priority.</p>
+            <h3>Joyful Imperfections</h3>
+            <p>The little variations are features, not flaws. They&apos;re proof it was made by human hands.</p>
           </div>
           <div className="why-card">
             <span className="why-card-icon"><HandHeart /></span>
-            <h3>No Mass Production</h3>
-            <p>Thoughtfully made in small batches, so every piece feels uniquely special.</p>
+            <h3>Made With Love</h3>
+            <p>Slow, thoughtful making — because things worth keeping deserve to be made carefully.</p>
           </div>
         </div>
 
@@ -161,10 +161,10 @@ export default async function Home() {
       <section style={{ maxWidth: 1320, margin: "0 auto 80px", padding: "0 40px" }}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16 }}>
           {[
-            { label: "Necklaces & Beads", icon: Gem, color: "var(--lavender)", href: "/shop?category=necklaces" },
-            { label: "Rings & Charms", icon: Gem, color: "var(--pink)", href: "/shop?category=rings" },
-            { label: "Drop Earrings", icon: Flower2, color: "var(--yellow)", href: "/shop?category=earrings" },
-            { label: "Gift Sets", icon: Gift, color: "var(--green)", href: "/shop?category=gifts" },
+            { label: "Necklaces & Beads", icon: Gem, color: "var(--lavender)", href: "/shop?category=Necklaces" },
+            { label: "Rings & Charms", icon: Gem, color: "var(--pink)", href: "/shop?category=Rings" },
+            { label: "Drop Earrings", icon: Flower2, color: "var(--yellow)", href: "/shop?category=Earrings" },
+            { label: "Ear Cuffs", icon: Gift, color: "var(--green)", href: "/shop?category=Ear Cuffs" },
           ].map(({ label, icon: Icon, color, href }) => (
             <Link
               key={label}
@@ -188,11 +188,11 @@ export default async function Home() {
       {/* ── SIGN-UP BANNER ────────────────────────────────── */}
       <section className="home-banner reveal" style={{ margin: "0 40px 110px" }}>
         <div>
-          <p className="eyebrow">new account treat</p>
-          <h2>Good things come<br /><i>to those who sign up.</i></h2>
-          <p>Join our little club and get 5% off your first order. No spam, just lovely things and studio notes.</p>
+          <p className="eyebrow">studio notes</p>
+          <h2>Good things come<br /><i>to those who take their time.</i></h2>
+          <p>Join our little club for new drops, maker stories, and thoughtful notes from the studio.</p>
           <Link href="/account?mode=signup" className="solid-button">
-            Get my 5% code <ArrowRight size={15} />
+            Join the studio list <ArrowRight size={15} />
           </Link>
         </div>
       </section>
