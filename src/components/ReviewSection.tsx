@@ -21,9 +21,14 @@ export default function ReviewSection({ productId }: { productId: string }) {
     event.preventDefault();
     const formElement = event.currentTarget;
     const form = new FormData(formElement);
-    const { error } = await createClient().from("reviews").insert({ product_id: productId, name: form.get("name"), rating: Number(form.get("rating")), body: form.get("body") });
-    if (error) setStatus("We could not submit your review. Please try again.");
-    else { setStatus("Thank you - your review is awaiting approval."); formElement.reset(); }
+    const { error } = await createClient().from("reviews").insert({ product_id: productId, name: String(form.get("name")), rating: Number(form.get("rating")), body: String(form.get("body")) });
+    if (error) {
+      console.error("Review submission error:", error);
+      setStatus(`Could not submit: ${error.message || "Please check inputs."}`);
+    } else {
+      setStatus("Thank you! Your review has been submitted and is in moderation.");
+      formElement.reset();
+    }
   }
 
   return <section className="reviews-section">

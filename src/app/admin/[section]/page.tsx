@@ -19,9 +19,16 @@ export default async function AdminSectionPage({ params }: { params: Promise<{ s
   const current = config[section as keyof typeof config];
   if (!current) return null;
   const supabase = await requireAdmin();
+  let query = supabase.from(current.table).select("*").limit(100);
+  if (section === "reviews" || section === "orders" || section === "products") {
+    query = query.order("created_at", { ascending: false });
+  }
   const [{ data, error }, { data: categories }] = await Promise.all([
-    supabase.from(current.table).select("*").limit(100),
+    query,
     supabase.from("categories").select("id,name").order("name"),
   ]);
+  if (error) {
+    console.error(`AdminSectionPage [${section}] query error:`, error);
+  }
   return <AdminWorkspace section={section as keyof typeof config} rows={error ? [] : (data ?? [])} categories={categories ?? []} />;
 }

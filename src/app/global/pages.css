@@ -19,11 +19,11 @@
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 48'%3E%3Cpath d='M0 48 C25 20 75 20 100 48' fill='%23fff8ed'/%3E%3C/svg%3E");
 }
 
-.page-hero.lavender { background: var(--lavender); color: var(--cream); }
-.page-hero.lavender h1 { color: var(--yellow); }
+.page-hero.lavender { background: var(--lavender); color: var(--ink); }
+.page-hero.lavender h1 { color: var(--ink); }
 .page-hero.lavender h1 i { color: var(--coral); }
-.page-hero.lavender .eyebrow { color: rgba(232,200,48,.7); }
-.page-hero.lavender > p:last-child { color: rgba(255,255,255,.8); }
+.page-hero.lavender .eyebrow { color: var(--coral); }
+.page-hero.lavender > p:last-child { color: var(--ink); opacity: .8; }
 .page-hero.coral    { background: var(--coral); color: var(--cream); }
 .page-hero.coral h1 i { color: var(--cream); }
 .page-hero.pink     { background: var(--blush); }
@@ -207,7 +207,7 @@
 .story-copy h1 { font-size: clamp(60px, 6vw, 80px); color: #ffffff; }
 .story-copy h1 i { color: #ffffff; opacity: 0.95; }
 .story-copy p:not(.eyebrow) { max-width: 400px; line-height: 1.8; opacity: .95; color: #ffffff; }
-.story-copy .outline-button { color: #fff; border-color: #fff; }
+.story-copy .outline-button { color: #fff; border-color: #fff; background: transparent; }
 .story-copy .outline-button:hover { background: rgba(255,255,255,.15); }
 
 /* Values strip below story */

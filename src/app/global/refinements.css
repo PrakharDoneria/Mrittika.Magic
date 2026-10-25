@@ -106,10 +106,10 @@
   position: sticky;
   top: 100px;
   padding: 30px;
-  border: 2px solid rgba(232,200,48,.4);
+  border: 2px solid var(--ink);
   border-radius: var(--radius-lg);
   background: var(--lavender);
-  color: #fff;
+  color: var(--ink);
   box-shadow: var(--shadow-pop-lg);
 }
 
