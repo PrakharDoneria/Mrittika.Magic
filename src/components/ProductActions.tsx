@@ -49,6 +49,17 @@ export default function ProductActions({ product }: { product: Product }) {
     const next = saved ? wishlist.filter((item) => item.id !== product.id) : [...wishlist, product];
     localStorage.setItem("mrittika-wishlist", JSON.stringify(next));
     window.dispatchEvent(new Event("mrittika-wishlist-updated"));
+
+    // Sync to database
+    fetch("/api/wishlist", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        productId: product.id,
+        productTitle: product.title,
+        action: saved ? "remove" : "add",
+      }),
+    }).catch((err) => console.error("Wishlist sync error:", err));
   }
 
   return <div className="product-actions">

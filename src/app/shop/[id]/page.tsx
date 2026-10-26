@@ -1,11 +1,10 @@
 import Link from "next/link";
-import { ArrowLeft, Check } from "lucide-react";
+import { ArrowLeft, Check, MessageSquare, Sparkles, Star } from "lucide-react";
 import { notFound } from "next/navigation";
-import { getProduct, getCategories } from "@/data/store";
-import { SiteChrome } from "@/components/Storefront";
+import { getProduct, getCategories, getRelatedProducts } from "@/data/store";
+import { ProductCard, SiteChrome } from "@/components/Storefront";
 import ProductActions from "@/components/ProductActions";
 import ProductGallery from "@/components/ProductGallery";
-import ReviewSection from "@/components/ReviewSection";
 import { productPath } from "@/data/product-path";
 import type { Metadata } from "next";
 
@@ -20,7 +19,10 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   const { id } = await params;
   const { data: product } = await getProduct(id);
   if (!product) notFound();
-  const { data: categories } = await getCategories();
+  const [{ data: categories }, relatedProducts] = await Promise.all([
+    getCategories(),
+    getRelatedProducts(product, 4),
+  ]);
 
   return (
     <SiteChrome categories={categories}>
@@ -48,10 +50,47 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
               </div>
             )}
             <ProductActions product={product} />
+
+            {/* Direct Link to dedicated Reviews page */}
+            <div style={{ marginTop: 24, paddingTop: 18, borderTop: "1px dashed rgba(8, 7, 134, 0.2)" }}>
+              <Link
+                href={`/shop/${product.slug}/reviews`}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
+                  fontSize: 13,
+                  fontWeight: 800,
+                  color: "var(--navy, #080786)",
+                  textDecoration: "underline",
+                }}
+              >
+                <MessageSquare size={16} /> Read all customer reviews & write one →
+              </Link>
+            </div>
           </div>
         </div>
-        <ReviewSection productId={product.id} />
+
+        {/* ── YOU MAY ALSO LIKE (RECOMMENDATION ALGO) ── */}
+        {relatedProducts.length > 0 && (
+          <section className="related-products-section reveal visible" style={{ marginTop: 80 }}>
+            <div className="section-heading" style={{ marginBottom: 28 }}>
+              <div>
+                <p className="eyebrow" style={{ color: "var(--navy, #080786)" }}>
+                  <Sparkles size={14} /> curated pairings
+                </p>
+                <h2 style={{ fontSize: "clamp(28px, 4vw, 42px)" }}>You May <i>Also Like</i></h2>
+              </div>
+            </div>
+            <div className="shop-grid">
+              {relatedProducts.map((relProduct) => (
+                <ProductCard product={relProduct} key={relProduct.id} />
+              ))}
+            </div>
+          </section>
+        )}
       </main>
     </SiteChrome>
   );
 }
+

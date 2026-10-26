@@ -34,54 +34,21 @@ export default function AboutPage() {
       </section>
 
       {/* ── VISUAL STUDIO SNAPSHOTS ──────────────────────── */}
-      <section style={{ maxWidth: 1160, margin: "50px auto 90px", padding: "0 24px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20 }}>
-          <div style={{
-            position: "relative",
-            aspectRatio: "1.2",
-            border: "2px solid var(--ink)",
-            borderRadius: "var(--radius-md)",
-            overflow: "hidden",
-            boxShadow: "var(--shadow-pop)",
-          }}>
-            <img src="/media/necklace.jpeg" alt="Handcrafted necklace closeup" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-            <span style={{
-              position: "absolute", bottom: 14, left: 14,
-              padding: "6px 14px", background: "var(--cream)", border: "1.5px solid var(--ink)",
-              borderRadius: "var(--radius-pill)", fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: ".1em",
-            }}>Curious forms ✦</span>
+      <section className="about-snapshots-section">
+        <div className="about-snapshots-grid">
+          <div className="about-snapshot-card">
+            <img src="/media/necklace.jpeg" alt="Handcrafted necklace closeup" />
+            <span>Curious forms ✦</span>
           </div>
 
-          <div style={{
-            position: "relative",
-            aspectRatio: "1.2",
-            border: "2px solid var(--ink)",
-            borderRadius: "var(--radius-md)",
-            overflow: "hidden",
-            boxShadow: "var(--shadow-pop)",
-          }}>
-            <img src="/media/buttons.jpeg" alt="Small details and clay components" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-            <span style={{
-              position: "absolute", bottom: 14, left: 14,
-              padding: "6px 14px", background: "var(--cream)", border: "1.5px solid var(--ink)",
-              borderRadius: "var(--radius-pill)", fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: ".1em",
-            }}>Hand-molded ✿</span>
+          <div className="about-snapshot-card">
+            <img src="/media/buttons.jpeg" alt="Small details and clay components" />
+            <span>Hand-molded ✿</span>
           </div>
 
-          <div style={{
-            position: "relative",
-            aspectRatio: "1.2",
-            border: "2px solid var(--ink)",
-            borderRadius: "var(--radius-md)",
-            overflow: "hidden",
-            boxShadow: "var(--shadow-pop)",
-          }}>
-            <img src="/background/flower.jpeg" alt="Colors and flowers" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-            <span style={{
-              position: "absolute", bottom: 14, left: 14,
-              padding: "6px 14px", background: "var(--cream)", border: "1.5px solid var(--ink)",
-              borderRadius: "var(--radius-pill)", fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: ".1em",
-            }}>Joyful Palette ❀</span>
+          <div className="about-snapshot-card">
+            <img src="/background/flower.jpeg" alt="Colors and flowers" />
+            <span>Joyful Palette ❀</span>
           </div>
         </div>
       </section>

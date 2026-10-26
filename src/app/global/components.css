@@ -650,22 +650,23 @@ h2 i { color: var(--coral); font-weight: 400; }
   opacity: .8;
 }
 
-/* â”€â”€â”€ SITE FOOTER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── SITE FOOTER ────────────────────────────────────────── */
 .site-footer {
   display: grid;
   grid-template-columns: 1.4fr .7fr 1fr;
   gap: 60px;
   padding: 75px max(40px, calc((100% - 1240px) / 2));
-  background: #0E0625;
-  color: var(--cream);
+  background: #080786 !important;
+  color: #ffffff !important;
   position: relative;
+  border-top: 3px solid var(--yellow, #FFD633);
 }
 .site-footer::before {
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 4px;
-  background: linear-gradient(90deg, var(--coral), var(--pink), var(--lavender), var(--green), var(--coral));
+  background: linear-gradient(90deg, var(--coral), var(--pink), var(--yellow), var(--green), var(--coral));
   background-size: 300% 100%;
   animation: shimmer 6s linear infinite;
 }

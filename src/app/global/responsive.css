@@ -1,11 +1,10 @@
-/* ─── MOBILE PALETTE (accent overrides for ≤800px) ──────── */
-@media (max-width: 800px) {
-  :root {
-    --m-pink:   #FF99CB;   /* hot pink  */
-    --m-blue:   #A9DEF9;   /* sky blue  */
-    --m-purple: #E4C1F9;   /* soft lilac */
-    --m-yellow: #FFD633;   /* bright gold */
-  }
+/* ─── MOBILE PALETTE (Coolors overrides) ──────── */
+:root {
+  --m-pink:   #FF99C8;   /* hot pink */
+  --m-blue:   #A9DEF9;   /* sky blue */
+  --m-purple: #E4C1F9;   /* lavender */
+  --m-yellow: #FFD633;   /* yellow */
+  --m-navy:   #080786;   /* deep navy */
 }
 
 /* ─── TABLET ────────────────────────────────────────────── */

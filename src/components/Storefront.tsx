@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowRight, Camera, ChevronDown, Flower2, Heart, Menu, Search, ShoppingBag, Star, UserRound, X } from "lucide-react";
+import { ArrowRight, Camera, ChevronDown, Flower2, Heart, Home, Mail, Menu, Palette, Search, ShoppingBag, Sparkles, Star, UserRound, X } from "lucide-react";
 import type { CartItem, Category } from "@/data/types";
 import { productPath } from "@/data/product-path";
 
@@ -23,7 +23,7 @@ function useReveal() {
 
 /* ─── SiteChrome ──────────────────────────────────────── */
 export function SiteChrome({ children, categories = [], showLadybug = false }: { children: React.ReactNode; categories?: Category[]; showLadybug?: boolean }) {
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [bottomSheetOpen, setBottomSheetOpen] = useState(false);
   const [categoriesOpen, setCategoriesOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const [scrolled, setScrolled] = useState(false);
@@ -43,7 +43,7 @@ export function SiteChrome({ children, categories = [], showLadybug = false }: {
   }, []);
 
   const closeDrawer = () => {
-    setMenuOpen(false);
+    setBottomSheetOpen(false);
     setCategoriesOpen(false);
   };
 
@@ -51,16 +51,35 @@ export function SiteChrome({ children, categories = [], showLadybug = false }: {
     <div className="site-shell">
       {/* Header */}
       <header className="site-header" style={scrolled ? { boxShadow: "0 3px 0 var(--pink), 0 6px 24px #2b1d2214" } : undefined}>
-        <button className="icon-button mobile-menu" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle navigation">
-          {menuOpen ? <X size={22} /> : <Menu size={22} />}
-        </button>
+        {/* Left header actions on mobile / Brand + Home on desktop */}
+        <div className="header-left">
+          <Link href="/" className="icon-button header-home-button" aria-label="Home">
+            <Home size={20} />
+          </Link>
+          <button
+            className="icon-button mobile-menu"
+            onClick={() => setBottomSheetOpen(true)}
+            aria-label="Open navigation menu"
+          >
+            <Menu size={22} />
+          </button>
+          {/* Desktop Brand Logo */}
+          <Link href="/" className="brand desktop-brand" aria-label="Mrittika Magic Home">
+            <img src="/logo/logo.jpeg" alt="Mrittika Magic" />
+          </Link>
+        </div>
 
-        <Link href="/" className="brand"><img src="/logo/logo.jpeg" alt="Mrittika Magic" /></Link>
+        {/* Mobile-only Centered Brand Logo */}
+        <Link href="/" className="brand mobile-brand" aria-label="Mrittika Magic Home">
+          <img src="/logo/logo.jpeg" alt="Mrittika Magic" />
+        </Link>
 
-        <nav className={menuOpen ? "main-nav open" : "main-nav"}>
-          <button className="drawer-close" onClick={closeDrawer} aria-label="Close navigation"><X size={20} /></button>
-          <Link href="/shop"        onClick={closeDrawer}>Shop all</Link>
-          <Link href="/collections" onClick={closeDrawer}>Collections</Link>
+        {/* Desktop Navigation */}
+        <nav className="main-nav desktop-nav">
+          <Link href="/">Home</Link>
+          <Link href="/shop">Shop all</Link>
+          <Link href="/my-arts">My Arts</Link>
+          <Link href="/mail-club">Mail Club</Link>
           {categories.length > 0 && (
             <div className={`nav-dropdown ${categoriesOpen ? "is-expanded" : ""}`}>
               <button
@@ -85,20 +104,143 @@ export function SiteChrome({ children, categories = [], showLadybug = false }: {
               </div>
             </div>
           )}
-          <Link href="/about"       onClick={closeDrawer}>Our story</Link>
-          <Link href="/journal"     onClick={closeDrawer}>Journal</Link>
+          <Link href="/community-love">Reviews</Link>
+          <Link href="/about">Our story</Link>
         </nav>
 
+        {/* Right header actions */}
         <div className="header-actions">
-          <Link href="/shop"               className="icon-button" aria-label="Search"><Search size={18} /></Link>
-          <Link href="/account"            className="icon-button" aria-label="Account"><UserRound size={18} /></Link>
-          <Link href="/account?tab=wishlist" className="icon-button" aria-label="Wishlist"><Heart size={18} /></Link>
-          <Link href="/cart"               className="icon-button cart-icon" aria-label="Shopping bag">
+          <Link href="/shop" className="icon-button header-search" aria-label="Search"><Search size={18} /></Link>
+          <Link href="/account" className="icon-button header-account" aria-label="Account"><UserRound size={18} /></Link>
+          <Link href="/wishlist" className="icon-button" aria-label="Wishlist"><Heart size={18} /></Link>
+          <Link href="/cart" className="icon-button cart-icon" aria-label="Shopping bag">
             <ShoppingBag size={19} />
             {cartCount > 0 && <b>{cartCount}</b>}
           </Link>
         </div>
       </header>
+
+      {/* Mobile Navigation: Bottom Sheet Modal */}
+      {bottomSheetOpen && (
+        <div
+          className="bottom-sheet-backdrop"
+          onClick={closeDrawer}
+          aria-modal="true"
+          role="dialog"
+          aria-label="Navigation drawer"
+        >
+          <div
+            className="bottom-sheet-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="bottom-sheet-drag-handle" aria-hidden="true" />
+            <div className="bottom-sheet-header">
+              <span className="bottom-sheet-title">Explore Mrittika</span>
+              <button
+                className="bottom-sheet-close"
+                onClick={closeDrawer}
+                aria-label="Close navigation"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="bottom-sheet-links">
+              <Link href="/" onClick={closeDrawer} className="sheet-link">
+                <Home size={18} />
+                <span>Home</span>
+              </Link>
+              <Link href="/shop" onClick={closeDrawer} className="sheet-link">
+                <ShoppingBag size={18} />
+                <span>Shop All Drops</span>
+              </Link>
+              <Link href="/my-arts" onClick={closeDrawer} className="sheet-link highlight-pink">
+                <Palette size={18} />
+                <span>My Arts</span>
+              </Link>
+              <Link href="/mail-club" onClick={closeDrawer} className="sheet-link highlight-yellow">
+                <Mail size={18} />
+                <span>Snail Mail Club</span>
+              </Link>
+
+              {/* Categories Collapsible */}
+              {categories.length > 0 && (
+                <div className="sheet-categories-group">
+                  <button
+                    type="button"
+                    className="sheet-categories-trigger"
+                    onClick={() => setCategoriesOpen(!categoriesOpen)}
+                  >
+                    <span>Categories</span>
+                    <ChevronDown size={16} className={categoriesOpen ? "rotate-180" : ""} />
+                  </button>
+                  {categoriesOpen && (
+                    <div className="sheet-categories-list">
+                      {categories.map((category) => (
+                        <Link
+                          key={category.id}
+                          href={`/shop?category=${encodeURIComponent(category.name)}`}
+                          onClick={closeDrawer}
+                          className="sheet-sublink"
+                        >
+                          {category.name}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <Link href="/about" onClick={closeDrawer} className="sheet-link">
+                <Flower2 size={18} />
+                <span>Our Story</span>
+              </Link>
+              <Link href="/wishlist" onClick={closeDrawer} className="sheet-link">
+                <Heart size={18} />
+                <span>Saved Wishlist</span>
+              </Link>
+              <Link href="/account" onClick={closeDrawer} className="sheet-link">
+                <UserRound size={18} />
+                <span>My Account</span>
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Fixed Bottom Navigation Bar */}
+      <nav className="mobile-bottom-bar" aria-label="Mobile quick bar">
+        <Link href="/" className="mobile-bar-btn" aria-label="Home">
+          <Home size={20} />
+          <span>Home</span>
+        </Link>
+        <Link href="/shop" className="mobile-bar-btn" aria-label="Shop">
+          <ShoppingBag size={20} />
+          <span>Shop</span>
+        </Link>
+        <button
+          type="button"
+          className="mobile-bar-btn mobile-bar-menu-trigger"
+          onClick={() => setBottomSheetOpen(true)}
+          aria-label="Menu"
+        >
+          <div className="mobile-bar-menu-icon">
+            <Menu size={22} />
+          </div>
+          <span>Menu</span>
+        </button>
+        <Link href="/wishlist" className="mobile-bar-btn" aria-label="Wishlist">
+          <Heart size={20} />
+          <span>Wishlist</span>
+        </Link>
+        <Link href="/cart" className="mobile-bar-btn cart-bar-btn" aria-label="Cart">
+          <div style={{ position: "relative" }}>
+            <ShoppingBag size={20} />
+            {cartCount > 0 && <span className="mobile-cart-badge">{cartCount}</span>}
+          </div>
+          <span>Cart</span>
+        </Link>
+      </nav>
 
       {showLadybug && <div className="ladybug" aria-hidden="true"><span>●</span><i>••</i></div>}
       {children}
@@ -114,10 +256,13 @@ export function SiteChrome({ children, categories = [], showLadybug = false }: {
         </div>
         <div>
           <strong>Explore</strong>
+          <Link href="/">Home</Link>
           <Link href="/shop">Shop all</Link>
-          <Link href="/collections">Collections</Link>
-          <Link href="/journal">Journal</Link>
+          <Link href="/my-arts">My Arts</Link>
+          <Link href="/mail-club">Mail Club</Link>
+          <Link href="/community-love">Community Love</Link>
           <Link href="/about">Our story</Link>
+          <Link href="/privacy-policy">Privacy policy</Link>
           <Link href="/return-policy">Return policy</Link>
         </div>
         <div>
@@ -166,7 +311,7 @@ export function ProductCard({ product, onAdd }: { product: import("@/data/types"
   }
 
   return (
-    <article className="product-card reveal">
+    <article className="product-card reveal visible">
       <div className="product-visual">
         <Link href={productPath(product)} aria-label={`View ${product.title}`} className="product-image-link">
           <div className="product-image" style={{ backgroundImage: `url('${product.images[0] ?? ""}')` }} />

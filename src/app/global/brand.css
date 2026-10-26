@@ -1,27 +1,31 @@
 /* ═══════════════════════════════════════════════════════════
-   MRITTIKA MAGIC — BRAND THEME
+   MRITTIKA MAGIC — BRAND THEME (Coolors Palette - Screenshot 1)
    Palette:
-     Sky blue   #A9DEF9  (primary — was deep violet)
-     Deep blue  #1F4E79  (accents / dropdowns / promo)
-     Pale pink  #FFF0F5  (light backgrounds — was light purple)
-     Coral      #E63946  · Gold #E8C830 · Cream #FDF5E6 · Ink #1D0F30
+     Hot Pink   #FF99C8
+     Sky Blue   #A9DEF9
+     Lavender   #E4C1F9
+     Yellow     #FFD633
+     Deep Navy  #080786
    ═══════════════════════════════════════════════════════════ */
 
 /* ─── Token overrides ────────────────────────────────────── */
 :root {
-  --ink:      #1D0F30;
-  --cream:    #FDF5E6;
-  --coral:    #E63946;
-  --coral-dk: #B91F2C;
-  --pink:     #E8C830;   /* gold — on-dark highlight colour */
-  --pink-mid: #C9AA1A;
-  --lavender: #A9DEF9;   /* sky blue — brand primary (was violet) */
-  --lav-mid:  #1F4E79;   /* deep blue — accents, dropdowns, promo */
-  --green:    #1B9AAA;   /* logo teal circle */
-  --green-dk: #0F7080;
-  --yellow:   #E8C830;
-  --blush:    #FFF0F5;   /* pale pink tint (was light purple) */
+  --ink:      #080786;   /* Deep Navy */
+  --navy:     #080786;
+  --cream:    #FFFDF9;
+  --coral:    #FF99C8;   /* Vibrant pink */
+  --coral-dk: #E67FAE;
+  --pink:     #FF99C8;   /* Coolors Pink */
+  --pink-mid: #FFAED3;
+  --lavender: #E4C1F9;   /* Coolors Lavender */
+  --lav-mid:  #080786;   /* Navy accent */
+  --blue:     #A9DEF9;   /* Coolors Sky Blue */
+  --green:    #A9DEF9;
+  --green-dk: #89C7E8;
+  --yellow:   #FFD633;   /* Coolors Yellow */
+  --blush:    #FFF5FA;
 }
+
 
 body { font-size: 17px; }
 .main-nav > a, .nav-dropdown-trigger { font-size: 13px; }
@@ -149,10 +153,8 @@ body { font-size: 17px; }
 .drawer-category-list span { font-size: 10px; letter-spacing: .16em; text-transform: uppercase; }
 .drawer-category-list a { font-family: var(--font-body), sans-serif; font-size: 13px; letter-spacing: .04em; text-transform: none; }
 
-.ladybug { position: fixed; z-index: 35; right: 8%; top: 25%; width: 30px; height: 24px; border-radius: 55% 55% 45% 45%; background: var(--coral); border: 2px solid var(--ink); transform: rotate(-12deg); animation: ladybug-travel 18s linear infinite; pointer-events: none; }
-.ladybug::before, .ladybug::after { content: ""; position: absolute; top: 5px; width: 4px; height: 4px; border-radius: 50%; background: var(--ink); box-shadow: 13px 5px 0 var(--ink), 6px 11px 0 var(--ink); }
-.ladybug::before { left: 4px; } .ladybug::after { right: 4px; }
-.ladybug span { position: absolute; left: 11px; top: -5px; color: var(--ink); font-size: 12px; } .ladybug i { display: none; }
+/* Global floating ladybug disabled - replaced with hero-only charms */
+.ladybug { display: none !important; }
 
 /* PRODUCT DETAIL COPY — sky blue bg with ink text (note: refinements.css overrides; kept in sync) */
 .product-detail-copy {

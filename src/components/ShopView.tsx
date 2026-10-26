@@ -12,10 +12,20 @@ export default function ShopView({ products, categories: supabaseCategories, pag
   const router = useRouter();
   const activeCategory = selectedCategory ?? category;
   const categories = ["All", ...supabaseCategories.map((item) => item.name)];
-  const filtered = useMemo(
-    () => products.filter((p) => p.title.toLowerCase().includes(query.toLowerCase())),
-    [products, query]
-  );
+  const [showFilterPanel, setShowFilterPanel] = useState(false);
+  const [sortBy, setSortBy] = useState<"featured" | "price-asc" | "price-desc" | "newest">("featured");
+
+  const filtered = useMemo(() => {
+    let result = products.filter((p) => p.title.toLowerCase().includes(query.toLowerCase()));
+    if (sortBy === "price-asc") {
+      result = [...result].sort((a, b) => a.price - b.price);
+    } else if (sortBy === "price-desc") {
+      result = [...result].sort((a, b) => b.price - a.price);
+    } else if (sortBy === "newest") {
+      result = [...result].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    }
+    return result;
+  }, [products, query, sortBy]);
 
   return (
     <>
@@ -28,20 +38,9 @@ export default function ShopView({ products, categories: supabaseCategories, pag
 
       {/* Shop Layout */}
       <section className="shop-layout">
-        {/* Toolbar */}
+        {/* Scroll view bar for categories (above search & filters, below toolbar container top) */}
         <div className="shop-toolbar">
-          <label className="search-field">
-            <Search size={16} />
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search products…"
-            />
-          </label>
-          <button className="filter-button">
-            <SlidersHorizontal size={15} /> Filters
-          </button>
-          <div className="category-tabs">
+          <div className="category-tabs" aria-label="Filter by category">
             {categories.map((item) => (
               <button
                 key={item}
@@ -55,6 +54,96 @@ export default function ShopView({ products, categories: supabaseCategories, pag
               </button>
             ))}
           </div>
+
+          <div className="shop-search-row">
+            <label className="search-field">
+              <Search size={16} />
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search products…"
+              />
+            </label>
+            <button
+              className={`filter-button ${showFilterPanel ? "active" : ""}`}
+              type="button"
+              onClick={() => setShowFilterPanel(!showFilterPanel)}
+              aria-label="Toggle filter panel"
+            >
+              <SlidersHorizontal size={15} /> Filters {sortBy !== "featured" && "•"}
+            </button>
+          </div>
+
+          {/* Interactive Filters Panel */}
+          {showFilterPanel && (
+            <div
+              className="filters-dropdown-panel reveal visible"
+              style={{
+                marginTop: 14,
+                padding: "16px 20px",
+                border: "2px solid var(--ink)",
+                borderRadius: "var(--radius-md)",
+                background: "#ffffff",
+                boxShadow: "3px 3px 0 var(--pink)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                flexWrap: "wrap",
+                gap: 16,
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                <span style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", letterSpacing: ".08em", color: "var(--ink)" }}>
+                  Sort By:
+                </span>
+                {[
+                  { id: "featured", label: "Featured" },
+                  { id: "newest", label: "Newest First" },
+                  { id: "price-asc", label: "Price: Low to High" },
+                  { id: "price-desc", label: "Price: High to Low" },
+                ].map((opt) => (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => setSortBy(opt.id as any)}
+                    style={{
+                      padding: "6px 14px",
+                      border: "1.5px solid var(--ink)",
+                      borderRadius: 999,
+                      background: sortBy === opt.id ? "var(--yellow, #FFD633)" : "#f6f3f8",
+                      fontWeight: sortBy === opt.id ? 800 : 600,
+                      fontSize: 12,
+                      cursor: "pointer",
+                      boxShadow: sortBy === opt.id ? "2px 2px 0 var(--ink)" : "none",
+                    }}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+
+              {(sortBy !== "featured" || query) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSortBy("featured");
+                    setQuery("");
+                  }}
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: "var(--coral)",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    textDecoration: "underline",
+                  }}
+                >
+                  Reset filters
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Count */}

@@ -161,3 +161,38 @@ for each row execute procedure public.handle_new_user();
 
 -- Run manually after reviewing the account:
 -- update public.profiles set role = 'admin' where id = 'AUTH_USER_UUID';
+
+-- Wishlists table
+create table if not exists public.wishlists (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete cascade,
+  product_id uuid not null references public.products(id) on delete cascade,
+  user_email text,
+  user_name text,
+  product_title text,
+  created_at timestamptz not null default now(),
+  unique(user_id, product_id)
+);
+
+alter table public.wishlists enable row level security;
+drop policy if exists "Users manage own wishlists" on public.wishlists;
+drop policy if exists "Admins view all wishlists" on public.wishlists;
+create policy "Users manage own wishlists" on public.wishlists for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+create policy "Admins view all wishlists" on public.wishlists for select using (public.is_admin());
+
+-- Feedback table
+create table if not exists public.feedback (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete set null,
+  name text,
+  email text,
+  rating integer check (rating between 1 and 5),
+  message text not null,
+  created_at timestamptz not null default now()
+);
+
+alter table public.feedback enable row level security;
+drop policy if exists "Anyone can submit feedback" on public.feedback;
+drop policy if exists "Admins view all feedback" on public.feedback;
+create policy "Anyone can submit feedback" on public.feedback for insert with check (char_length(message) between 2 and 3000);
+create policy "Admins view all feedback" on public.feedback for select using (public.is_admin());
