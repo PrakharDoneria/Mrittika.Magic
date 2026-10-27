@@ -196,3 +196,80 @@ drop policy if exists "Anyone can submit feedback" on public.feedback;
 drop policy if exists "Admins view all feedback" on public.feedback;
 create policy "Anyone can submit feedback" on public.feedback for insert with check (char_length(message) between 2 and 3000);
 create policy "Admins view all feedback" on public.feedback for select using (public.is_admin());
+
+-- Mail Club table (fix: table 'public.mail_club' in schema cache)
+create table if not exists public.mail_club (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete set null,
+  name text not null,
+  phone text not null,
+  email text not null,
+  address text not null,
+  city text not null,
+  state text not null,
+  postal_code text not null,
+  plan text not null default 'Monthly',
+  subscription_status text not null default 'active', -- 'active', 'paused', 'cancelled'
+  payment_status text not null default 'Paid', -- 'Paid', 'Pending', 'Failed'
+  payment_gateway text not null default 'Cashfree',
+  cf_order_id text,
+  cf_subscription_id text,
+  created_at timestamptz not null default now()
+);
+
+alter table public.mail_club enable row level security;
+drop policy if exists "Anyone can submit mail club" on public.mail_club;
+drop policy if exists "Admins manage mail club" on public.mail_club;
+create policy "Anyone can submit mail club" on public.mail_club for insert with check (true);
+create policy "Admins manage mail club" on public.mail_club for all using (public.is_admin());
+
+-- My Arts table (dynamic studio artwork catalog)
+create table if not exists public.my_arts (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  category text,
+  year text default '2024',
+  image text not null,
+  description text,
+  badge text,
+  display_order integer default 0,
+  created_at timestamptz not null default now()
+);
+
+alter table public.my_arts enable row level security;
+drop policy if exists "Public view my arts" on public.my_arts;
+drop policy if exists "Admins manage my arts" on public.my_arts;
+create policy "Public view my arts" on public.my_arts for select using (true);
+create policy "Admins manage my arts" on public.my_arts for all using (public.is_admin());
+
+-- Store Settings (dynamic privacy policy, return policy, brand configuration)
+create table if not exists public.store_settings (
+  key text primary key,
+  value jsonb not null,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.store_settings enable row level security;
+drop policy if exists "Public view store settings" on public.store_settings;
+drop policy if exists "Admins manage store settings" on public.store_settings;
+create policy "Public view store settings" on public.store_settings for select using (true);
+create policy "Admins manage store settings" on public.store_settings for all using (public.is_admin());
+
+-- Analytics Events (page views, product searches, product clicks, add-to-carts)
+create table if not exists public.analytics_events (
+  id uuid primary key default gen_random_uuid(),
+  event_type text not null, -- 'page_view', 'product_search', 'product_view', 'cart_add'
+  path text,
+  search_query text,
+  product_id uuid references public.products(id) on delete set null,
+  product_title text,
+  metadata jsonb,
+  created_at timestamptz not null default now()
+);
+
+alter table public.analytics_events enable row level security;
+drop policy if exists "Anyone can record analytics" on public.analytics_events;
+drop policy if exists "Admins view analytics" on public.analytics_events;
+create policy "Anyone can record analytics" on public.analytics_events for insert with check (true);
+create policy "Admins view analytics" on public.analytics_events for select using (public.is_admin());
+

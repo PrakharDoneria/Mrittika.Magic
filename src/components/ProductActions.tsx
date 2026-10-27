@@ -1,8 +1,9 @@
 "use client";
 
 import { Heart, Minus, Plus, ShoppingBag } from "lucide-react";
-import { useSyncExternalStore, useState } from "react";
+import { useSyncExternalStore, useState, useEffect } from "react";
 import type { Product, CartItem } from "@/data/types";
+import { trackEvent } from "@/lib/analytics";
 
 let wishlistSnapshotRaw = "";
 let wishlistSnapshot: Product[] = [];
@@ -19,6 +20,15 @@ function getWishlistSnapshot() {
 export default function ProductActions({ product }: { product: Product }) {
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
+
+  useEffect(() => {
+    trackEvent("product_view", {
+      product_id: product.id,
+      product_title: product.title,
+      path: window.location.pathname,
+    });
+  }, [product.id, product.title]);
+
   const wishlist = useSyncExternalStore(
     (onChange) => { window.addEventListener("mrittika-wishlist-updated", onChange); window.addEventListener("storage", onChange); return () => { window.removeEventListener("mrittika-wishlist-updated", onChange); window.removeEventListener("storage", onChange); }; },
     getWishlistSnapshot,
@@ -27,6 +37,12 @@ export default function ProductActions({ product }: { product: Product }) {
   const saved = wishlist.some((item) => item.id === product.id);
 
   function addToCart() {
+    trackEvent("cart_add", {
+      product_id: product.id,
+      product_title: product.title,
+      metadata: { quantity, price: product.price },
+    });
+
     const stored = JSON.parse(localStorage.getItem("mrittika-cart") ?? "[]") as CartItem[];
     const existing = stored.find((item) => item.id === product.id);
     if ((existing?.quantity ?? 0) >= product.stock) {

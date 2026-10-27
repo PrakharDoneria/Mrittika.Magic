@@ -1,19 +1,19 @@
 /* â”€â”€â”€ TOKENS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 :root {
-  --ink:      #080786;
+  --ink:      #1D0F30;
   --navy:     #080786;
-  --cream:    #FFFDF9;
-  --pink:     #FF99C8;
-  --pink-mid: #FFAED3;
-  --coral:    #FF99C8;
-  --coral-dk: #E67FAE;
-  --lavender: #E4C1F9;
-  --lav-mid:  #080786;
-  --green:    #A9DEF9;
-  --green-dk: #89C7E8;
+  --cream:    #FDF5E6;
+  --pink:     #E63946;
+  --pink-mid: #B91F2C;
+  --coral:    #E63946;
+  --coral-dk: #B91F2C;
+  --lavender: #A9DEF9;
+  --lav-mid:  #1F4E79;
+  --green:    #1B9AAA;
+  --green-dk: #0F7080;
   --blue:     #A9DEF9;
-  --yellow:   #FFD633;
-  --blush:    #FFF5FA;
+  --yellow:   #E8C830;
+  --blush:    #FFF0F5;
 
   --font-body:    var(--font-body-var, system-ui, sans-serif);
   --font-display: var(--font-display-var, Georgia, serif);

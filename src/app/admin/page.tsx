@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BarChart3, Box, FolderKanban, Heart, Mail, MessageSquareHeart, ShoppingBag, Star, Users } from "lucide-react";
+import { BarChart3, Box, FolderKanban, Heart, Mail, MessageSquareHeart, Palette, Settings, ShoppingBag, Star, Users } from "lucide-react";
 import { SiteChrome } from "@/components/Storefront";
 import { requireAdmin } from "@/lib/supabase/admin";
 
@@ -20,6 +20,8 @@ export default async function AdminPage() {
     [Box, "Products", "products"],
     [ShoppingBag, "Orders", "orders"],
     [FolderKanban, "Categories", "categories"],
+    [Palette, "My Arts", "my-arts"],
+    [Settings, "Settings & Policies", "settings"],
     [Heart, "Wishlists", "wishlists"],
     [Mail, "Mail Club", "mail-club"],
     [MessageSquareHeart, "Feedback", "feedback"],

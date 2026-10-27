@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight, Search, SlidersHorizontal } from "lucide-react";
 import type { Category, Product } from "@/data/types";
 import { ProductCard } from "./Storefront";
+import { trackEvent } from "@/lib/analytics";
 
 export default function ShopView({ products, categories: supabaseCategories, page, total, selectedCategory }: { products: Product[]; categories: Category[]; page: number; total: number; selectedCategory?: string }) {
   const [query, setQuery] = useState("");
@@ -14,6 +15,18 @@ export default function ShopView({ products, categories: supabaseCategories, pag
   const categories = ["All", ...supabaseCategories.map((item) => item.name)];
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const [sortBy, setSortBy] = useState<"featured" | "price-asc" | "price-desc" | "newest">("featured");
+  const searchTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (!query.trim() || query.trim().length < 2) return;
+    if (searchTimeout.current) clearTimeout(searchTimeout.current);
+    searchTimeout.current = setTimeout(() => {
+      trackEvent("product_search", { search_query: query.trim() });
+    }, 800);
+    return () => {
+      if (searchTimeout.current) clearTimeout(searchTimeout.current);
+    };
+  }, [query]);
 
   const filtered = useMemo(() => {
     let result = products.filter((p) => p.title.toLowerCase().includes(query.toLowerCase()));

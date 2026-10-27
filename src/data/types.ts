@@ -29,3 +29,15 @@ export type Category = {
   image_url: string | null;
   created_at: string;
 };
+
+export type ArtPiece = {
+  id: string;
+  title: string;
+  category: string | null;
+  year: string | null;
+  image: string;
+  description: string | null;
+  badge: string | null;
+  display_order?: number;
+  created_at?: string;
+};

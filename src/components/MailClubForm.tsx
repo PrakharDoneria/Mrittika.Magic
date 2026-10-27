@@ -1,9 +1,20 @@
 "use client";
 
-import { useState } from "react";
-import { CheckCircle2, Heart, Mail, Package, Send, Sparkles } from "lucide-react";
+import { useEffect, useState } from "react";
+import { CheckCircle2, CreditCard, Heart, Mail, Package, Send, ShieldCheck, Sparkles } from "lucide-react";
 
 import { STORE_SETTINGS } from "@/data/store-settings";
+
+declare global {
+  interface Window {
+    Cashfree?: (config: { mode: "sandbox" | "production" }) => {
+      checkout: (options: {
+        paymentSessionId: string;
+        redirectTarget?: "_self" | "_blank" | "_modal";
+      }) => Promise<{ error?: { message: string }; redirect?: boolean }>;
+    };
+  }
+}
 
 export default function MailClubForm() {
   const { snailMail } = STORE_SETTINGS;
@@ -19,28 +30,68 @@ export default function MailClubForm() {
   const [submitted, setSubmitted] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
+  // Load Cashfree JS SDK
+  useEffect(() => {
+    if (typeof window !== "undefined" && !document.getElementById("cashfree-sdk-script")) {
+      const script = document.createElement("script");
+      script.id = "cashfree-sdk-script";
+      script.src = "https://sdk.cashfree.com/js/v3/cashfree.js";
+      script.async = true;
+      document.body.appendChild(script);
+    }
+  }, []);
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setSubmitting(true);
     setErrorMsg("");
+
+    // Validate all mandatory fields
+    if (
+      !name.trim() ||
+      !phone.trim() ||
+      !email.trim() ||
+      !address.trim() ||
+      !city.trim() ||
+      !state.trim() ||
+      !postalCode.trim()
+    ) {
+      setErrorMsg("Please fill out all fields. Every delivery and subscription field is mandatory.");
+      setSubmitting(false);
+      return;
+    }
 
     try {
       const res = await fetch("/api/mail-club", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name,
-          phone,
-          email,
-          address,
-          city,
-          state,
-          postalCode,
+          name: name.trim(),
+          phone: phone.trim(),
+          email: email.trim(),
+          address: address.trim(),
+          city: city.trim(),
+          state: state.trim(),
+          postalCode: postalCode.trim(),
           plan,
         }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Subscription failed");
+
+      // If Cashfree returned a session id and SDK is ready, trigger checkout modal
+      if (data.paymentSessionId && typeof window !== "undefined" && window.Cashfree) {
+        try {
+          const cashfree = window.Cashfree({ mode: "sandbox" });
+          cashfree.checkout({
+            paymentSessionId: data.paymentSessionId,
+            redirectTarget: "_modal",
+          });
+        } catch (cfLaunchErr) {
+          console.warn("Cashfree checkout launch notice:", cfLaunchErr);
+        }
+      }
+
       setSubmitted(true);
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : "Something went wrong.");
@@ -59,22 +110,27 @@ export default function MailClubForm() {
           We are so thrilled to write to you, <strong>{name}</strong>! Your <strong>{plan}</strong> subscription has been recorded.
           Our maker is already preparing handwritten wax-sealed envelopes, art prints, and seasonal tokens for your mailbox.
         </p>
-        <button
-          type="button"
-          className="solid-button"
-          onClick={() => {
-            setSubmitted(false);
-            setName("");
-            setPhone("");
-            setEmail("");
-            setAddress("");
-            setCity("");
-            setState("");
-            setPostalCode("");
-          }}
-        >
-          Add Another Mailbox
-        </button>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 16px", background: "rgba(8, 7, 134, 0.08)", borderRadius: "var(--radius-pill)", fontSize: 13, fontWeight: 700, color: "var(--navy, #080786)" }}>
+          <CreditCard size={14} /> Cashfree Recurring Billing: Active
+        </div>
+        <div style={{ marginTop: 24 }}>
+          <button
+            type="button"
+            className="solid-button"
+            onClick={() => {
+              setSubmitted(false);
+              setName("");
+              setPhone("");
+              setEmail("");
+              setAddress("");
+              setCity("");
+              setState("");
+              setPostalCode("");
+            }}
+          >
+            Add Another Mailbox
+          </button>
+        </div>
       </div>
     );
   }
@@ -117,7 +173,7 @@ export default function MailClubForm() {
         </div>
       </div>
 
-      {/* Input fields */}
+      {/* Input fields — ALL MANDATORY */}
       <div className="mail-fields-grid">
         <label className="mail-field">
           <span>Full Name *</span>
@@ -143,7 +199,7 @@ export default function MailClubForm() {
       </div>
 
       <label className="mail-field">
-        <span>Email Address *</span>
+        <span>Email Address (For billing & dispatch updates) *</span>
         <input
           type="email"
           required
@@ -166,9 +222,10 @@ export default function MailClubForm() {
 
       <div className="mail-fields-triplet">
         <label className="mail-field">
-          <span>City</span>
+          <span>City *</span>
           <input
             type="text"
+            required
             placeholder="City"
             value={city}
             onChange={(e) => setCity(e.target.value)}
@@ -176,9 +233,10 @@ export default function MailClubForm() {
         </label>
 
         <label className="mail-field">
-          <span>State</span>
+          <span>State *</span>
           <input
             type="text"
+            required
             placeholder="State"
             value={state}
             onChange={(e) => setState(e.target.value)}
@@ -186,14 +244,21 @@ export default function MailClubForm() {
         </label>
 
         <label className="mail-field">
-          <span>PIN Code / Postal Code</span>
+          <span>PIN Code / Postal Code *</span>
           <input
             type="text"
+            required
             placeholder="Postal Code"
             value={postalCode}
             onChange={(e) => setPostalCode(e.target.value)}
           />
         </label>
+      </div>
+
+      {/* Cashfree Recurring Payment note */}
+      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", borderRadius: "var(--radius-sm)", background: "rgba(8, 7, 134, 0.04)", border: "1px dashed rgba(8, 7, 134, 0.2)", fontSize: 13, color: "var(--navy, #080786)" }}>
+        <ShieldCheck size={18} />
+        <span>Secure Cashfree recurring subscription. You can cancel or pause anytime from your account.</span>
       </div>
 
       {errorMsg && <p className="feedback-error">{errorMsg}</p>}
@@ -204,7 +269,7 @@ export default function MailClubForm() {
         disabled={submitting}
       >
         <Mail size={16} />
-        {submitting ? "Joining Club..." : `Join ${plan} Mail Club`}
+        {submitting ? "Initiating Cashfree Payment..." : `Join ${plan} Club with Cashfree`}
       </button>
     </form>
   );

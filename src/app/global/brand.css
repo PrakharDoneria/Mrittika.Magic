@@ -10,20 +10,20 @@
 
 /* ─── Token overrides ────────────────────────────────────── */
 :root {
-  --ink:      #080786;   /* Deep Navy */
+  --ink:      #1D0F30;
   --navy:     #080786;
-  --cream:    #FFFDF9;
-  --coral:    #FF99C8;   /* Vibrant pink */
-  --coral-dk: #E67FAE;
-  --pink:     #FF99C8;   /* Coolors Pink */
-  --pink-mid: #FFAED3;
-  --lavender: #E4C1F9;   /* Coolors Lavender */
-  --lav-mid:  #080786;   /* Navy accent */
-  --blue:     #A9DEF9;   /* Coolors Sky Blue */
-  --green:    #A9DEF9;
-  --green-dk: #89C7E8;
-  --yellow:   #FFD633;   /* Coolors Yellow */
-  --blush:    #FFF5FA;
+  --cream:    #FDF5E6;
+  --coral:    #E63946;   /* Red / Coral from 9c5f760 */
+  --coral-dk: #B91F2C;
+  --pink:     #E63946;   /* Red replacing pink as in 9c5f760 */
+  --pink-mid: #B91F2C;
+  --lavender: #A9DEF9;   /* sky blue — brand primary */
+  --lav-mid:  #1F4E79;   /* deep blue — accents, dropdowns, promo */
+  --blue:     #A9DEF9;
+  --green:    #1B9AAA;   /* logo teal circle */
+  --green-dk: #0F7080;
+  --yellow:   #E8C830;
+  --blush:    #FFF0F5;   /* pale pink tint */
 }
 
 

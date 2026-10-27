@@ -1,67 +1,22 @@
 import Link from "next/link";
 import { ArrowRight, Flower2, Heart, Sparkles, Palette } from "lucide-react";
 import { SiteChrome } from "@/components/Storefront";
-import { getProducts } from "@/data/store";
+import { getProducts, getMyArts } from "@/data/store";
 import { productPath } from "@/data/product-path";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export const metadata = {
   title: "My Arts — Handcrafted Wearable Sculptures & Studio Pieces",
   description: "Explore the studio art of Mrittika Magic: hand-sculpted clay pieces, whimsical curiosities, and textured wearable crafts.",
 };
 
-const ART_GALLERY = [
-  {
-    title: "Hand-Molded Clay Botanicals",
-    category: "Clay & Flora",
-    year: "2024",
-    image: "/media/buttons.jpeg",
-    description: "Each floral motif is pinched, carved, and baked slowly in miniature batches.",
-    badge: "Limited Edition",
-  },
-  {
-    title: "Curious Beaded Statements",
-    category: "Wearable Art",
-    year: "2024",
-    image: "/media/necklace.jpeg",
-    description: "A playful dance between freshwater pearls, raw polymer forms, and vintage beads.",
-    badge: "Studio Signature",
-  },
-  {
-    title: "Pastel Drop Sculptures",
-    category: "Earring Form",
-    year: "2024",
-    image: "/media/ear-ring.jpeg",
-    description: "Featherlight earrings created to bring movement, color, and gentle optimism.",
-    badge: "Artisan Favorite",
-  },
-  {
-    title: "Organic Minimal Rings",
-    category: "Ring Art",
-    year: "2024",
-    image: "/media/ring.jpeg",
-    description: "Sculpted by hand to fit effortlessly, celebrating tactile textures and wonky charm.",
-    badge: "Hand-molded",
-  },
-  {
-    title: "Botanical Color Clashes",
-    category: "Experimentations",
-    year: "2024",
-    image: "/background/flower.jpeg",
-    description: "Studies in saturated yellows, lilac washes, and sky blues straight from studio tables.",
-    badge: "Palette Drop",
-  },
-  {
-    title: "Ladybug Charm Explorations",
-    category: "Whimsical Series",
-    year: "2024",
-    image: "/background/pants.jpeg",
-    description: "Playful everyday curiosities that turn garments into happy, interactive canvases.",
-    badge: "Iconic Whimsy",
-  },
-];
-
 export default async function MyArtsPage() {
-  const { data: products } = await getProducts({ limit: 6 });
+  const [{ data: products }, artPieces] = await Promise.all([
+    getProducts({ limit: 6 }),
+    getMyArts(),
+  ]);
 
   return (
     <SiteChrome>
@@ -91,24 +46,38 @@ export default async function MyArtsPage() {
           </p>
         </div>
 
-        <div className="my-arts-grid">
-          {ART_GALLERY.map((item, idx) => (
-            <div key={item.title} className={`my-arts-card card-color-${idx % 4}`}>
-              <div className="my-arts-image-wrapper">
-                <img src={item.image} alt={item.title} />
-                <span className="my-arts-badge">{item.badge}</span>
-              </div>
-              <div className="my-arts-card-content">
-                <div className="my-arts-card-meta">
-                  <span>{item.category}</span>
-                  <small>{item.year}</small>
+        {artPieces.length > 0 ? (
+          <div className="my-arts-grid">
+            {artPieces.map((item, idx) => (
+              <div key={item.id || item.title} className={`my-arts-card card-color-${idx % 4}`}>
+                <div className="my-arts-image-wrapper">
+                  <img src={item.image} alt={item.title} />
+                  {item.badge && <span className="my-arts-badge">{item.badge}</span>}
                 </div>
-                <h3>{item.title}</h3>
-                <p>{item.description}</p>
+                <div className="my-arts-card-content">
+                  <div className="my-arts-card-meta">
+                    <span>{item.category || "Studio Artwork"}</span>
+                    <small>{item.year || "2024"}</small>
+                  </div>
+                  <h3>{item.title}</h3>
+                  <p>{item.description || "A one-of-a-kind handcrafted studio piece."}</p>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div style={{ marginTop: 24, padding: "48px 24px", border: "2px dashed var(--line, #ccc)", borderRadius: "var(--radius-md)", textAlign: "center" }}>
+            <p style={{ margin: "0 0 10px", fontSize: 18, color: "var(--navy, #080786)", fontWeight: 700 }}>
+              No studio artworks in database yet.
+            </p>
+            <p style={{ margin: "0 0 20px", fontSize: 14, color: "var(--muted, #666)" }}>
+              Add and manage your one-of-a-kind handcrafted art pieces directly from the Admin Panel.
+            </p>
+            <Link href="/admin/my-arts" className="solid-button" style={{ display: "inline-flex", fontSize: 13 }}>
+              Add Artwork in Admin →
+            </Link>
+          </div>
+        )}
       </section>
 
       {/* Available Shop Art Drops */}

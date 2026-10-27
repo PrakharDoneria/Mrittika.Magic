@@ -52,11 +52,10 @@ export async function getRelatedProducts(currentProduct: Product, limit: number 
   if (!supabase) return [];
   const columns = "id,title,slug,description,price,category,category_id,images,stock,sku,material,dimensions,weight,care_instructions,is_featured,created_at";
 
-  // Recommendation algorithm:
-  // 1. Same category first
-  // 2. Similar price range (+/- 40%)
-  // 3. Fallback to featured or newest products
-  // 4. Exclude current product
+  // Recommendation algorithm using ONLY real database products:
+  // 1. Same category first (excluding current product)
+  // 2. Additional published products from catalog (excluding current product)
+  // No mock data will ever be returned.
   try {
     let related: Product[] = [];
     if (currentProduct.category) {
@@ -92,5 +91,26 @@ export async function getRelatedProducts(currentProduct: Product, limit: number 
     console.error("Related products algorithm error:", err);
     return [];
   }
+}
+
+export async function getMyArts(): Promise<import("./types").ArtPiece[]> {
+  try {
+    const supabase = await createClient();
+    if (!supabase) return [];
+
+    const { data, error } = await supabase
+      .from("my_arts")
+      .select("*")
+      .order("display_order", { ascending: true })
+      .order("created_at", { ascending: false });
+
+    if (!error && data) {
+      return data as import("./types").ArtPiece[];
+    }
+  } catch (err) {
+    console.error("Error fetching my_arts:", err);
+  }
+
+  return [];
 }
 

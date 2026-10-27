@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { ArrowRight, Camera, ChevronDown, Flower2, Heart, Home, Mail, Menu, Palette, Search, ShoppingBag, Sparkles, Star, UserRound, X } from "lucide-react";
 import type { CartItem, Category } from "@/data/types";
 import { productPath } from "@/data/product-path";
+import { trackEvent } from "@/lib/analytics";
 
 const money = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 });
 
@@ -28,6 +29,10 @@ export function SiteChrome({ children, categories = [], showLadybug = false }: {
   const [cartCount, setCartCount] = useState(0);
   const [scrolled, setScrolled] = useState(false);
   useReveal();
+
+  useEffect(() => {
+    trackEvent("page_view", { path: window.location.pathname });
+  }, []);
 
   useEffect(() => {
     const updateCount = () => setCartCount(Number(localStorage.getItem("mrittika-cart-count") ?? 0));

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { SiteChrome } from "@/components/Storefront";
+import AboutVideos from "@/components/AboutVideos";
 
 export default function AboutPage() {
   return (
@@ -9,7 +10,7 @@ export default function AboutPage() {
       <section className="story-page">
         <div className="story-image" style={{ backgroundImage: "url('/media/desk.jpeg')" }} />
         <div className="story-copy">
-          <p className="eyebrow" style={{ color: "var(--cream)" }}>for those who believe in magic</p>
+          <p className="eyebrow">for those who believe in magic</p>
           <h1>A little weird,<br /><i>a little wonderful.</i></h1>
           <p>Mrittika is a playful little universe of handmade jewellery, where clay, beads, bold colours, and curious shapes come together to create wearable art.</p>
           <p>Born out of a love for art, experimentation, and everything a little out of the ordinary, every piece celebrates happy imperfections and the beauty of being unapologetically yourself.</p>
@@ -33,25 +34,8 @@ export default function AboutPage() {
         </p>
       </section>
 
-      {/* ── VISUAL STUDIO SNAPSHOTS ──────────────────────── */}
-      <section className="about-snapshots-section">
-        <div className="about-snapshots-grid">
-          <div className="about-snapshot-card">
-            <img src="/media/necklace.jpeg" alt="Handcrafted necklace closeup" />
-            <span>Curious forms ✦</span>
-          </div>
-
-          <div className="about-snapshot-card">
-            <img src="/media/buttons.jpeg" alt="Small details and clay components" />
-            <span>Hand-molded ✿</span>
-          </div>
-
-          <div className="about-snapshot-card">
-            <img src="/background/flower.jpeg" alt="Colors and flowers" />
-            <span>Joyful Palette ❀</span>
-          </div>
-        </div>
-      </section>
+      {/* ── VISUAL STUDIO SNAPSHOTS (3 Random Videos from public/videos) ── */}
+      <AboutVideos />
 
       {/* ── VALUES STRIP ──────────────────────────────────── */}
       <div className="values-strip">
