@@ -17,6 +17,7 @@ export default function AutoScrollCarousel({
 }: AutoScrollProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const isPausedRef = useRef(false);
+  const resumeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     let animId: number;
@@ -37,8 +38,30 @@ export default function AutoScrollCarousel({
     };
 
     animId = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(animId);
+    return () => {
+      cancelAnimationFrame(animId);
+      if (resumeTimeoutRef.current) {
+        clearTimeout(resumeTimeoutRef.current);
+      }
+    };
   }, [speed]);
+
+  const handleTouchStart = () => {
+    if (pauseOnHover) {
+      if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current);
+      isPausedRef.current = true;
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (pauseOnHover) {
+      if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current);
+      // Give the user 1.5s after touch interaction ends before resuming smooth auto scroll
+      resumeTimeoutRef.current = setTimeout(() => {
+        isPausedRef.current = false;
+      }, 1500);
+    }
+  };
 
   return (
     <div
@@ -50,12 +73,9 @@ export default function AutoScrollCarousel({
       onMouseLeave={() => {
         if (pauseOnHover) isPausedRef.current = false;
       }}
-      onTouchStart={() => {
-        if (pauseOnHover) isPausedRef.current = true;
-      }}
-      onTouchEnd={() => {
-        if (pauseOnHover) isPausedRef.current = false;
-      }}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      onTouchCancel={handleTouchEnd}
     >
       {children}
     </div>

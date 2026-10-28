@@ -309,7 +309,7 @@
   .showcase-header .eyebrow { justify-content: flex-start !important; }
   .showcase-header h2 { font-size: 36px; }
   .showcase-header > p:last-child { font-size: 12px !important; }
-  .showcase-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  /* .showcase-grid handled by horizontal carousel in refinements.css */
   .showcase-item { aspect-ratio: .82; border-radius: 12px; box-shadow: 3px 4px 0 var(--ink); }
   .showcase-caption { padding: 22px 8px 8px; }
   .showcase-caption span { font-size: 8px; }
@@ -422,7 +422,7 @@
     display: flex;
     gap: 16px;
     overflow-x: auto;
-    scroll-snap-type: x mandatory;
+    /* scroll-snap-type: x mandatory; */
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     padding: 6px 16px 24px;
@@ -432,7 +432,7 @@
   .drops-scroll::-webkit-scrollbar { display: none; }
   .drops-scroll .product-card {
     flex: 0 0 210px;
-    scroll-snap-align: start;
+    /* scroll-snap-align: start; */
     min-width: 210px;
     background: #ffffff;
     border: 2px solid var(--ink);
@@ -696,12 +696,12 @@
   .hero-visual-card {
     height: 220px;
   }
-  .showcase-grid { grid-template-columns: repeat(2, 1fr); }
+  /* .showcase-grid { grid-template-columns: repeat(2, 1fr); } */
   .showcase-strip { padding: 0 20px; margin-bottom: 70px; }
 }
 
 @media (max-width: 580px) {
-  .showcase-grid { grid-template-columns: 1fr; }
+  /* .showcase-grid { grid-template-columns: 1fr; } */
 }
 
 
