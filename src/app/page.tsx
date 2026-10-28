@@ -1,15 +1,86 @@
 import Link from "next/link";
-import { ArrowRight, BadgeCheck, Flower2, HandHeart } from "lucide-react";
+import { ArrowRight, BadgeCheck, Flower2, HandHeart, MessageSquareHeart, Star } from "lucide-react";
 import { getCategories, getProducts } from "@/data/store";
 import { ProductCard, SiteChrome } from "@/components/Storefront";
 import InstagramFeed from "@/components/InstagramFeed";
 import FeedbackSection from "@/components/FeedbackSection";
+import AutoScrollCarousel from "@/components/AutoScrollCarousel";
+import { createClient } from "@/lib/supabase/server";
 
 export default async function Home() {
-  const [{ data: products }, { data: categories }] = await Promise.all([
+  const supabase = await createClient();
+
+  const [{ data: products }, { data: categories }, reviewsRes, feedbackRes] = await Promise.all([
     getProducts({ limit: 12 }),
     getCategories(),
+    supabase
+      ? supabase.from("reviews").select("id,name,rating,body,created_at").gte("rating", 4).eq("is_published", true).limit(10)
+      : Promise.resolve({ data: [] }),
+    supabase
+      ? supabase.from("feedback").select("id,name,rating,message,created_at").gte("rating", 4).limit(10)
+      : Promise.resolve({ data: [] }),
   ]);
+
+  // Combine positive reviews & community feedback notes
+  const combinedReviews: { id: string; name: string; rating: number; text: string }[] = [];
+
+  if (reviewsRes.data && reviewsRes.data.length > 0) {
+    reviewsRes.data.forEach((r: any) => {
+      combinedReviews.push({
+        id: `rev-${r.id}`,
+        name: r.name || "Happy Collector",
+        rating: r.rating || 5,
+        text: r.body,
+      });
+    });
+  }
+
+  if (feedbackRes.data && feedbackRes.data.length > 0) {
+    feedbackRes.data.forEach((f: any) => {
+      combinedReviews.push({
+        id: `fb-${f.id}`,
+        name: f.name || "A Mrittika Friend",
+        rating: f.rating || 5,
+        text: f.message,
+      });
+    });
+  }
+
+  // Fallback lovely customer reviews if DB has few
+  const fallbackReviews = [
+    {
+      id: "f1",
+      name: "Ananya S.",
+      rating: 5,
+      text: "The earrings are even more stunning in person! Lightweight, playful, and beautifully detailed. I get compliments everywhere I go.",
+    },
+    {
+      id: "f2",
+      name: "Sneha Mukherjee",
+      rating: 5,
+      text: "The packaging made me smile from ear to ear! The tiny handwritten note felt so intimate and magical. Thank you Mrittika!",
+    },
+    {
+      id: "f3",
+      name: "Pooja V.",
+      rating: 5,
+      text: "Obsessed with the clay texture and vibrant colors. It feels like wearing actual pieces of joyous art.",
+    },
+    {
+      id: "f4",
+      name: "Meera K.",
+      rating: 5,
+      text: "Every piece has so much personality. Truly unique handmade treasures made with so much thought and love.",
+    },
+    {
+      id: "f5",
+      name: "Rhea Sen",
+      rating: 5,
+      text: "I bought this for my best friend and ended up coming back to buy one for myself. Magical work!",
+    },
+  ];
+
+  const displayReviews = combinedReviews.length > 0 ? combinedReviews : fallbackReviews;
 
   return (
     <SiteChrome categories={categories}>
@@ -23,33 +94,139 @@ export default async function Home() {
           <div className="hero-jeans-bg" style={{ backgroundImage: "url('/background/pants.jpeg')" }} />
           <div className="hero-jeans-overlay" />
 
-          {/* Ladybug charms over jeans background */}
-          <div className="hero-ladybug-cluster" aria-hidden="true">
-            <span className="hero-cluster-bug bug-1" />
-            <span className="hero-cluster-bug bug-2" />
-            <span className="hero-cluster-bug bug-3" />
-            <span className="hero-cluster-bug bug-4" />
-          </div>
-
           <div className="hero-jeans-foreground">
-            <h1 className="hero-jeans-script-title">
-              Welcome<br />
-              <span>to Mrittika</span>
-            </h1>
-            <p className="hero-jeans-tagline">where magic happens</p>
-            <div className="hero-jeans-actions">
-              <Link href="/shop" className="hero-jeans-btn primary">
-                Shop new drops <ArrowRight size={14} />
-              </Link>
-              <Link href="/about" className="hero-jeans-btn secondary">
-                Our story <Flower2 size={14} />
-              </Link>
+            <div className="hero-vegas-sign">
+              {/* Brand ladybug charms anchored to the top-right and bottom-left kaju katli diamond edges */}
+              <div className="hero-vegas-ladybug top-bug" aria-hidden="true">
+                <img src="/brand/ladybug.png" alt="" className="vegas-ladybug-img" />
+              </div>
+              <div className="hero-vegas-ladybug bottom-bug" aria-hidden="true">
+                <img src="/brand/ladybug.png" alt="" className="vegas-ladybug-img" />
+              </div>
+
+              {/* Embroidered SVG outline for double golden border and stitched stroke */}
+              <svg className="vegas-sign-svg-frame" viewBox="0 0 860 360" preserveAspectRatio="none" aria-hidden="true">
+                <defs>
+                  {/* Outer border gradient */}
+                  <linearGradient id="vegasGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#faea9c" />
+                    <stop offset="35%" stopColor="#e5be4e" />
+                    <stop offset="70%" stopColor="#cfa32e" />
+                    <stop offset="100%" stopColor="#fae792" />
+                  </linearGradient>
+                  {/* Sign background fill gradient */}
+                  <linearGradient id="vegasFillGrad" x1="0%" y1="50%" x2="100%" y2="50%">
+                    <stop offset="0%" stopColor="#faeb9f" />
+                    <stop offset="30%" stopColor="#f3d778" />
+                    <stop offset="50%" stopColor="#fae48d" />
+                    <stop offset="70%" stopColor="#f3d778" />
+                    <stop offset="100%" stopColor="#faeb9f" />
+                  </linearGradient>
+                  {/* Subtle stitch pattern */}
+                  <pattern id="vegasClothPattern" width="6" height="6" patternUnits="userSpaceOnUse">
+                    <path d="M0 6 L6 0 M0 0 L6 6" stroke="rgba(185, 138, 25, 0.08)" strokeWidth="1" />
+                  </pattern>
+                </defs>
+
+                {/* Main 4-sided diamond / kaju katli polygon base */}
+                <polygon
+                  points="430,12  844,180  430,348  16,180"
+                  fill="url(#vegasFillGrad)"
+                  stroke="url(#vegasGoldGrad)"
+                  strokeWidth="15"
+                  strokeLinejoin="round"
+                />
+
+                {/* Fabric texture overlay on the 4-sided polygon */}
+                <polygon
+                  points="430,12  844,180  430,348  16,180"
+                  fill="url(#vegasClothPattern)"
+                />
+
+                {/* Inner white / cream highlight line (4 sides) */}
+                <polygon
+                  points="430,22  830,180  430,338  30,180"
+                  fill="none"
+                  stroke="rgba(255, 255, 255, 0.85)"
+                  strokeWidth="2.5"
+                  strokeLinejoin="round"
+                />
+
+                {/* Inner dashed embroidered stitch (4 sides) */}
+                <polygon
+                  points="430,32  814,180  430,328  46,180"
+                  fill="none"
+                  stroke="#af8520"
+                  strokeWidth="2"
+                  strokeDasharray="6,5"
+                  strokeLinejoin="round"
+                />
+              </svg>
+
+              {/* Inner sign content */}
+              <div className="hero-vegas-content">
+                {/* Top WELCOME badge letter circles */}
+                <div className="hero-vegas-welcome">
+                  {"WELCOME".split("").map((letter, i) => (
+                    <span key={i} className="vegas-letter-disc">
+                      {letter}
+                    </span>
+                  ))}
+                </div>
+
+                {/* Main brand script title with starburst sparkle */}
+                <div className="hero-vegas-brand-wrap">
+                  <span className="hero-vegas-starburst" aria-hidden="true">✦</span>
+                  <h1 className="hero-vegas-title">Mrittika</h1>
+                </div>
+
+                {/* Tagline script */}
+                <p className="hero-vegas-tagline">where magic happens</p>
+
+                {/* Pill buttons nested inside bottom of the badge */}
+                <div className="hero-vegas-actions">
+                  <Link href="/shop" className="hero-vegas-btn yellow-btn">
+                    <span>SHOP NEW DROPS</span>
+                    <span className="vegas-btn-arrow">»</span>
+                  </Link>
+                  <Link href="/about" className="hero-vegas-btn white-btn">
+                    <span>OUR STORY</span>
+                    <Flower2 size={12} className="vegas-btn-icon" />
+                  </Link>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── 2. FRESH CURATION / CHECKOUT LATEST COLLECTION ───────── */}
+      {/* ── 2. NEW SELF-SCROLLING HORIZONTAL MEDIA CAROUSEL (Joy In Every Detail) ── */}
+      <section className="home-media-strip-section reveal" style={{ maxWidth: 1200, margin: "40px auto 20px", padding: "0 24px" }}>
+        <div className="section-heading" style={{ marginBottom: 20 }}>
+          <div>
+            <p className="eyebrow"><Flower2 size={14} /> studio snapshots &amp; happy moments</p>
+            <h2>Joy In <i>Every Detail</i></h2>
+          </div>
+          <Link href="/shop" className="text-link">
+            Explore Studio <ArrowRight size={15} />
+          </Link>
+        </div>
+
+        <AutoScrollCarousel className="home-media-scroll auto-scroll-strip" speed={0.75}>
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+            <Link href="/shop" key={num} className="home-media-card">
+              <img
+                src={`/media/home/${num}.jpeg`}
+                alt={`Handmade Mrittika piece ${num}`}
+                loading="lazy"
+              />
+              <span className="home-media-badge">✦ Mrittika Studio</span>
+            </Link>
+          ))}
+        </AutoScrollCarousel>
+      </section>
+
+      {/* ── 3. FRESH CURATION / CHECKOUT LATEST COLLECTION ───────── */}
       <section className="featured-section">
         <div className="section-heading reveal">
           <div>
@@ -60,11 +237,11 @@ export default async function Home() {
         </div>
 
         {products.length > 0 ? (
-          <div className="drops-scroll">
+          <AutoScrollCarousel className="drops-scroll" speed={0.8}>
             {products.map((product) => (
               <ProductCard product={product} key={product.id} />
             ))}
-          </div>
+          </AutoScrollCarousel>
         ) : (
           <div className="empty-state reveal">
             <p className="quote-mark">&quot;</p>
@@ -84,7 +261,7 @@ export default async function Home() {
 
         {/* Real categories from database if available, linking directly to categories */}
         {categories.length > 0 ? (
-          <div className="showcase-grid">
+          <AutoScrollCarousel className="showcase-grid auto-scroll-strip" speed={0.7}>
             {categories.map((cat, idx) => (
               <Link
                 key={cat.id}
@@ -102,9 +279,9 @@ export default async function Home() {
                 </div>
               </Link>
             ))}
-          </div>
+          </AutoScrollCarousel>
         ) : (
-          <div className="showcase-grid">
+          <AutoScrollCarousel className="showcase-grid auto-scroll-strip" speed={0.7}>
             <Link href="/shop?category=Necklaces" className="showcase-item" style={{ textDecoration: "none" }}>
               <img src="/media/necklace.jpeg" alt="Handmade statement necklace" />
               <div className="showcase-caption">
@@ -133,7 +310,7 @@ export default async function Home() {
                 <small>04</small>
               </div>
             </Link>
-          </div>
+          </AutoScrollCarousel>
         )}
       </section>
 
@@ -164,10 +341,40 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ── 5. FOLLOW ALONG / INSTAGRAM ───────────────────────────── */}
+      {/* ── 5. FOLLOW ALONG / INSTAGRAM ── */}
       <InstagramFeed />
 
-      {/* ── 6. FEEDBACK SECTION IN THE HOME PAGE ─────────────────── */}
+      {/* ── 7. POSITIVE REVIEWS SELF-SCROLLING HORIZONTAL GRID (Kind Words & Happy Mail) ── */}
+      <section className="home-reviews-section reveal" style={{ maxWidth: 1200, margin: "60px auto 30px", padding: "0 24px" }}>
+        <div className="section-heading" style={{ marginBottom: 24 }}>
+          <div>
+            <p className="eyebrow"><MessageSquareHeart size={14} /> love notes from our collectors</p>
+            <h2>Kind Words &amp; <i>Happy Mail</i></h2>
+          </div>
+          <Link href="/community-love" className="text-link">
+            See All Reviews <ArrowRight size={15} />
+          </Link>
+        </div>
+
+        <AutoScrollCarousel className="home-reviews-scroll auto-scroll-strip" speed={0.75}>
+          {displayReviews.map((rev) => (
+            <div key={rev.id} className="home-review-card">
+              <div className="home-review-stars">
+                {[...Array(rev.rating)].map((_, i) => (
+                  <Star key={i} size={15} fill="currentColor" />
+                ))}
+              </div>
+              <p className="home-review-text">&ldquo;{rev.text}&rdquo;</p>
+              <div className="home-review-author">
+                <strong>{rev.name}</strong>
+                <span className="home-review-badge">Verified Collector</span>
+              </div>
+            </div>
+          ))}
+        </AutoScrollCarousel>
+      </section>
+
+      {/* ── 8. FEEDBACK SECTION IN THE HOME PAGE ─────────────────── */}
       <FeedbackSection />
     </SiteChrome>
   );

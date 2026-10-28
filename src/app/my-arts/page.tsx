@@ -3,6 +3,7 @@ import { ArrowRight, Flower2, Heart, Sparkles, Palette } from "lucide-react";
 import { SiteChrome } from "@/components/Storefront";
 import { getProducts, getMyArts } from "@/data/store";
 import { productPath } from "@/data/product-path";
+import AutoScrollCarousel from "@/components/AutoScrollCarousel";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -93,7 +94,7 @@ export default async function MyArtsPage() {
             </Link>
           </div>
 
-          <div className="drops-scroll">
+          <AutoScrollCarousel className="drops-scroll" speed={0.8}>
             {products.slice(0, 4).map((product) => (
               <div key={product.id} className="art-product-preview-card">
                 <Link href={productPath(product)}>
@@ -109,7 +110,7 @@ export default async function MyArtsPage() {
                 </Link>
               </div>
             ))}
-          </div>
+          </AutoScrollCarousel>
         </section>
       )}
 

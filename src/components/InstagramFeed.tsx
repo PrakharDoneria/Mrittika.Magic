@@ -27,11 +27,12 @@ interface VideoCard {
 export default function InstagramFeed() {
   const [videoCards, setVideoCards] = useState<VideoCard[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const isHoveredRef = useRef(false);
 
   useEffect(() => {
-    // Pick 6 random videos from public/videos (1.mp4 to 26.mp4)
+    // Pick 8 random videos from public/videos (1.mp4 to 26.mp4)
     const shuffled = [...ALL_VIDEOS].sort(() => 0.5 - Math.random());
-    const selected = shuffled.slice(0, 6);
+    const selected = shuffled.slice(0, 8);
 
     const cards: VideoCard[] = selected.map((src, idx) => {
       const cap = CAPTIONS[idx % CAPTIONS.length];
@@ -40,6 +41,28 @@ export default function InstagramFeed() {
 
     setVideoCards(cards);
   }, []);
+
+  // Continuous smooth auto-scroll
+  useEffect(() => {
+    let animId: number;
+    const speed = 0.75; // smooth gentle pixels per frame
+
+    const step = () => {
+      const el = scrollRef.current;
+      if (el && !isHoveredRef.current) {
+        // If reached end, wrap back smoothly
+        if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 2) {
+          el.scrollLeft = 0;
+        } else {
+          el.scrollLeft += speed;
+        }
+      }
+      animId = requestAnimationFrame(step);
+    };
+
+    animId = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(animId);
+  }, [videoCards]);
 
   const handleScrollRight = () => {
     if (scrollRef.current) {
@@ -78,7 +101,14 @@ export default function InstagramFeed() {
 
       {/* Horizontal Video Carousel */}
       <div className="ig-video-showcase-wrap">
-        <div className="ig-video-scroll-container" ref={scrollRef}>
+        <div
+          className="ig-video-scroll-container"
+          ref={scrollRef}
+          onMouseEnter={() => { isHoveredRef.current = true; }}
+          onMouseLeave={() => { isHoveredRef.current = false; }}
+          onTouchStart={() => { isHoveredRef.current = true; }}
+          onTouchEnd={() => { isHoveredRef.current = false; }}
+        >
           {videoCards.map((card, idx) => (
             <Link
               key={idx}

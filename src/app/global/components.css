@@ -783,7 +783,6 @@ h2 i { color: var(--coral); font-weight: 400; }
   display: flex;
   gap: 22px;
   overflow-x: auto;
-  scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
   padding: 24px 10px 36px;
