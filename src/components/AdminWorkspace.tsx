@@ -63,6 +63,7 @@ interface AdminWorkspaceProps {
   rows: Row[];
   categories: CategoryOption[];
   ordersForAnalytics?: any[];
+  wishlistsForAnalytics?: any[];
   storeSettings?: any;
 }
 
@@ -71,6 +72,7 @@ export default function AdminWorkspace({
   rows,
   categories,
   ordersForAnalytics = [],
+  wishlistsForAnalytics = [],
   storeSettings = {},
 }: AdminWorkspaceProps) {
   const [message, setMessage] = useState("");
@@ -278,7 +280,7 @@ export default function AdminWorkspace({
 
         {/* ─── SPECIALIZED SECTION RENDERING ─────────────────── */}
         {section === "analytics" ? (
-          <AnalyticsDashboard events={rows} orders={ordersForAnalytics} />
+          <AnalyticsDashboard events={rows} orders={ordersForAnalytics} wishlists={wishlistsForAnalytics} />
         ) : section === "my-arts" ? (
           <MyArtsManager initialPieces={rows as any} />
         ) : section === "settings" ? (

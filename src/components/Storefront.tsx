@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowRight, Camera, ChevronDown, Flower2, Heart, Home, Mail, Menu, Palette, Search, ShoppingBag, Sparkles, Star, UserRound, X } from "lucide-react";
-import type { CartItem, Category } from "@/data/types";
+import { ArrowRight, Camera, ChevronDown, Flower2, Heart, Home, Mail, Menu, Palette, Search, ShieldCheck, ShoppingBag, Sparkles, Star, UserRound, X } from "lucide-react";
+import type { CartItem, Category, Product } from "@/data/types";
 import { productPath } from "@/data/product-path";
 import { trackEvent } from "@/lib/analytics";
 
@@ -23,15 +23,39 @@ function useReveal() {
 }
 
 /* ─── SiteChrome ──────────────────────────────────────── */
-export function SiteChrome({ children, categories = [], showLadybug = false }: { children: React.ReactNode; categories?: Category[]; showLadybug?: boolean }) {
+export function SiteChrome({
+  children,
+  categories = [],
+  showLadybug = false,
+}: {
+  children: React.ReactNode;
+  categories?: Category[];
+  showLadybug?: boolean;
+}) {
   const [bottomSheetOpen, setBottomSheetOpen] = useState(false);
   const [categoriesOpen, setCategoriesOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const [scrolled, setScrolled] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   useReveal();
 
   useEffect(() => {
     trackEvent("page_view", { path: window.location.pathname });
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+    fetch("/api/auth/status")
+      .then((res) => res.json())
+      .then((data) => {
+        if (isMounted && data?.isAdmin) {
+          setIsAdmin(true);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -54,6 +78,18 @@ export function SiteChrome({ children, categories = [], showLadybug = false }: {
 
   return (
     <div className="site-shell">
+      {/* Edge wall ladybugs for specific pages - left and right sides only */}
+      {showLadybug && (
+        <aside className="page-wall-ladybugs" aria-hidden="true">
+          {/* Left Edge Ladybugs */}
+          <div className="wall-ladybug card-bug-left-top"><img src="/brand/ladybug.png" alt="" /></div>
+          <div className="wall-ladybug card-bug-left-bottom"><img src="/brand/ladybug.png" alt="" /></div>
+          {/* Right Edge Ladybugs */}
+          <div className="wall-ladybug card-bug-right-top"><img src="/brand/ladybug.png" alt="" /></div>
+          <div className="wall-ladybug card-bug-right-bottom"><img src="/brand/ladybug.png" alt="" /></div>
+        </aside>
+      )}
+
       {/* Header */}
       <header className="site-header" style={scrolled ? { boxShadow: "0 3px 0 var(--pink), 0 6px 24px #2b1d2214" } : undefined}>
         {/* Left header actions on mobile / Brand + Home on desktop */}
@@ -83,7 +119,7 @@ export function SiteChrome({ children, categories = [], showLadybug = false }: {
         <nav className="main-nav desktop-nav">
           <Link href="/">Home</Link>
           <Link href="/shop">Shop all</Link>
-          <Link href="/my-arts">My Arts</Link>
+          <Link href="/my-arts">The Sketchbook</Link>
           <Link href="/mail-club">Mail Club</Link>
           {categories.length > 0 && (
             <div className={`nav-dropdown ${categoriesOpen ? "is-expanded" : ""}`}>
@@ -111,10 +147,21 @@ export function SiteChrome({ children, categories = [], showLadybug = false }: {
           )}
           <Link href="/community-love">Reviews</Link>
           <Link href="/about">Our story</Link>
+          {isAdmin && (
+            <Link href="/admin" className="desktop-admin-badge" title="Open Studio Admin Panel">
+              <ShieldCheck size={14} />
+              <span>Admin</span>
+            </Link>
+          )}
         </nav>
 
         {/* Right header actions */}
         <div className="header-actions">
+          {isAdmin && (
+            <Link href="/admin" className="icon-button header-admin-mobile-icon" aria-label="Admin Panel" title="Admin Panel">
+              <ShieldCheck size={19} />
+            </Link>
+          )}
           <Link href="/shop" className="icon-button header-search" aria-label="Search"><Search size={18} /></Link>
           <Link href="/account" className="icon-button header-account" aria-label="Account"><UserRound size={18} /></Link>
           <Link href="/wishlist" className="icon-button" aria-label="Wishlist"><Heart size={18} /></Link>
@@ -151,6 +198,12 @@ export function SiteChrome({ children, categories = [], showLadybug = false }: {
             </div>
 
             <div className="bottom-sheet-links">
+              {isAdmin && (
+                <Link href="/admin" onClick={closeDrawer} className="sheet-link highlight-admin">
+                  <ShieldCheck size={18} />
+                  <span>Admin Studio Workspace</span>
+                </Link>
+              )}
               <Link href="/" onClick={closeDrawer} className="sheet-link">
                 <Home size={18} />
                 <span>Home</span>
@@ -161,7 +214,7 @@ export function SiteChrome({ children, categories = [], showLadybug = false }: {
               </Link>
               <Link href="/my-arts" onClick={closeDrawer} className="sheet-link highlight-pink">
                 <Palette size={18} />
-                <span>My Arts</span>
+                <span>The Sketchbook</span>
               </Link>
               <Link href="/mail-club" onClick={closeDrawer} className="sheet-link highlight-yellow">
                 <Mail size={18} />
@@ -247,7 +300,6 @@ export function SiteChrome({ children, categories = [], showLadybug = false }: {
         </Link>
       </nav>
 
-      {showLadybug && <div className="ladybug" aria-hidden="true"><span>●</span><i>••</i></div>}
       {children}
 
       {/* Footer */}
@@ -263,7 +315,7 @@ export function SiteChrome({ children, categories = [], showLadybug = false }: {
           <strong>Explore</strong>
           <Link href="/">Home</Link>
           <Link href="/shop">Shop all</Link>
-          <Link href="/my-arts">My Arts</Link>
+          <Link href="/my-arts">The Sketchbook</Link>
           <Link href="/mail-club">Mail Club</Link>
           <Link href="/community-love">Community Love</Link>
           <Link href="/about">Our story</Link>
@@ -285,7 +337,7 @@ export function SiteChrome({ children, categories = [], showLadybug = false }: {
 }
 
 /* ─── ProductCard ─────────────────────────────────────── */
-export function ProductCard({ product, onAdd }: { product: import("@/data/types").Product; onAdd?: () => void }) {
+export function ProductCard({ product, onAdd }: { product: Product; onAdd?: () => void }) {
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
 

@@ -61,10 +61,15 @@ export default async function AdminSectionPage({ params }: { params: Promise<{ s
   }
 
   let ordersForAnalytics: any[] = [];
+  let wishlistsForAnalytics: any[] = [];
   if (section === "analytics") {
     try {
-      const { data } = await supabase.from("orders").select("total_amount,payment_status,created_at").limit(300);
-      if (data) ordersForAnalytics = data;
+      const [ordersRes, wishlistsRes] = await Promise.all([
+        supabase.from("orders").select("total_amount,payment_status,created_at").limit(300),
+        supabase.from("wishlists").select("product_id,product_title,created_at").limit(500),
+      ]);
+      if (ordersRes.data) ordersForAnalytics = ordersRes.data;
+      if (wishlistsRes.data) wishlistsForAnalytics = wishlistsRes.data;
     } catch {}
   }
 
@@ -76,6 +81,7 @@ export default async function AdminSectionPage({ params }: { params: Promise<{ s
       rows={rows}
       categories={categories}
       ordersForAnalytics={ordersForAnalytics}
+      wishlistsForAnalytics={wishlistsForAnalytics}
       storeSettings={storeSettings}
     />
   );

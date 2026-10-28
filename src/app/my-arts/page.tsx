@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export const metadata = {
-  title: "My Arts — Handcrafted Wearable Sculptures & Studio Pieces",
+  title: "The Sketchbook — Handcrafted Wearable Sculptures & Studio Pieces",
   description: "Explore the studio art of Mrittika Magic: hand-sculpted clay pieces, whimsical curiosities, and textured wearable crafts.",
 };
 
@@ -20,7 +20,7 @@ export default async function MyArtsPage() {
   ]);
 
   return (
-    <SiteChrome>
+    <SiteChrome showLadybug={true}>
       {/* Page Hero */}
       <section className="page-hero my-arts-hero">
         <div className="hero-ladybug-cluster" aria-hidden="true">
@@ -31,7 +31,7 @@ export default async function MyArtsPage() {
         <p className="eyebrow" style={{ justifyContent: "center" }}>
           <Palette size={14} /> studio archive & wearable crafts
         </p>
-        <h1>My <i>Arts.</i></h1>
+        <h1>The <i>Sketchbook.</i></h1>
         <p>
           A peek into hands-on sculptures, tiny experiments, and wearable delights made with intention.
         </p>

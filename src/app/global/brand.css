@@ -154,7 +154,7 @@ body { font-size: 17px; }
 .drawer-category-list a { font-family: var(--font-body), sans-serif; font-size: 13px; letter-spacing: .04em; text-transform: none; }
 
 /* Global floating ladybug disabled - replaced with hero-only charms */
-.ladybug { display: none !important; }
+/* .ladybug enabled for specific page borders */
 
 /* PRODUCT DETAIL COPY — sky blue bg with ink text (note: refinements.css overrides; kept in sync) */
 .product-detail-copy {

@@ -5,7 +5,7 @@ import AboutVideos from "@/components/AboutVideos";
 
 export default function AboutPage() {
   return (
-    <SiteChrome>
+    <SiteChrome showLadybug={true}>
       {/* ── STORY SPLIT ───────────────────────────────────── */}
       <section className="story-page">
         <div className="story-image" style={{ backgroundImage: "url('/media/desk.jpeg')" }} />

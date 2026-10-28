@@ -3,5 +3,9 @@ import { SiteChrome } from "@/components/Storefront";
 import WishlistView from "@/components/WishlistView";
 
 export default function WishlistPage() {
-  return <SiteChrome><WishlistView /></SiteChrome>;
+  return (
+    <SiteChrome showLadybug={true}>
+      <WishlistView />
+    </SiteChrome>
+  );
 }
