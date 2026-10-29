@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
+import { ArrowRight, Minus, Plus, ShoppingBag, Trash2, ShieldCheck, Sparkles } from "lucide-react";
 import { useSyncExternalStore } from "react";
 import type { CartItem } from "@/data/types";
 import { SiteChrome } from "@/components/Storefront";
@@ -45,7 +45,10 @@ export default function CartPage() {
     window.dispatchEvent(new Event("mrittika-cart-updated"));
   }
 
-  const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const totalItemsCount = items.reduce((sum, item) => sum + item.quantity, 0);
+  const shipping = subtotal > 0 ? (subtotal >= 999 ? 0 : 79) : 0;
+  const total = subtotal + shipping;
 
   return (
     <SiteChrome showLadybug={true}>
@@ -79,13 +82,54 @@ export default function CartPage() {
                 </article>
               ))}
             </div>
+
+            {/* Complete Price Breakdown in Subtotal */}
             <aside className="cart-summary">
-              <ShoppingBag size={28} />
-              <p>Subtotal</p>
-              <strong>₹{total.toLocaleString("en-IN")}</strong>
-              <Link href="/checkout" className="solid-button">
+              <div className="cart-summary-header">
+                <ShoppingBag size={24} />
+                <h2>Order Summary</h2>
+              </div>
+
+              <div className="cart-breakdown-table">
+                <div className="cart-breakdown-row">
+                  <span>Items Subtotal ({totalItemsCount} {totalItemsCount === 1 ? "item" : "items"})</span>
+                  <strong>₹{subtotal.toLocaleString("en-IN")}</strong>
+                </div>
+
+                <div className="cart-breakdown-row">
+                  <span>Standard Studio Shipping</span>
+                  {shipping === 0 ? (
+                    <span className="cart-free-tag">FREE</span>
+                  ) : (
+                    <strong>₹{shipping.toLocaleString("en-IN")}</strong>
+                  )}
+                </div>
+
+                {shipping === 0 && (
+                  <p className="cart-shipping-note">
+                    <Sparkles size={12} /> Free shipping unlocked on your order!
+                  </p>
+                )}
+
+                <div className="cart-breakdown-divider" />
+
+                <div className="cart-breakdown-row total-row">
+                  <div>
+                    <strong>Total Amount</strong>
+                    <small>Including all studio packing & taxes</small>
+                  </div>
+                  <strong className="cart-grand-total">₹{total.toLocaleString("en-IN")}</strong>
+                </div>
+              </div>
+
+              <Link href="/checkout" className="solid-button cart-checkout-btn">
                 Continue to checkout <ArrowRight size={15} />
               </Link>
+
+              <div className="cart-guarantee">
+                <ShieldCheck size={16} />
+                <span>Handmade with care • Safe & verified checkout</span>
+              </div>
             </aside>
           </div>
         ) : (

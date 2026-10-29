@@ -18,7 +18,9 @@ const SNAPSHOT_BADGES = [
 export default function AboutVideos() {
   const [selectedVideos, setSelectedVideos] = useState<string[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const isHoveredRef = useRef(false);
+  const isPausedRef = useRef(false);
+  const resumeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const posRef = useRef(0);
 
   useEffect(() => {
     // Pick 6 random distinct videos for rich continuous scrolling
@@ -26,19 +28,40 @@ export default function AboutVideos() {
     setSelectedVideos(shuffled.slice(0, 6));
   }, []);
 
-  // Continuous smooth auto-scroll
+  // Continuous smooth auto-scroll with Apple / iOS WebKit support
   useEffect(() => {
     let animId: number;
     const speed = 0.75;
+    const el = scrollRef.current;
+    if (el) {
+      posRef.current = el.scrollLeft;
+    }
 
     const tick = () => {
-      const el = scrollRef.current;
-      if (el && !isHoveredRef.current) {
-        if (el.scrollWidth > el.clientWidth) {
-          if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 1) {
-            el.scrollLeft = 0;
+      const target = scrollRef.current;
+      if (target && !isPausedRef.current) {
+        const maxScroll = target.scrollWidth - target.clientWidth;
+        if (maxScroll > 1) {
+          if (Math.abs(target.scrollLeft - posRef.current) > 3) {
+            posRef.current = target.scrollLeft;
+          }
+
+          if (posRef.current >= maxScroll - 1) {
+            posRef.current = 0;
+            target.scrollLeft = 0;
+            if (typeof target.scrollTo === "function") {
+              try {
+                target.scrollTo({ left: 0, behavior: "auto" });
+              } catch {}
+            }
           } else {
-            el.scrollLeft += speed;
+            posRef.current += speed;
+            target.scrollLeft = posRef.current;
+            if (typeof target.scrollTo === "function") {
+              try {
+                target.scrollTo({ left: posRef.current, behavior: "auto" });
+              } catch {}
+            }
           }
         }
       }
@@ -46,8 +69,26 @@ export default function AboutVideos() {
     };
 
     animId = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(animId);
+    return () => {
+      cancelAnimationFrame(animId);
+      if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current);
+    };
   }, [selectedVideos]);
+
+  const handleTouchStart = () => {
+    if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current);
+    isPausedRef.current = true;
+  };
+
+  const handleTouchEnd = () => {
+    if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current);
+    resumeTimeoutRef.current = setTimeout(() => {
+      if (scrollRef.current) {
+        posRef.current = scrollRef.current.scrollLeft;
+      }
+      isPausedRef.current = false;
+    }, 1200);
+  };
 
   const videos = selectedVideos.length > 0 ? selectedVideos : [ALL_VIDEOS[0], ALL_VIDEOS[1], ALL_VIDEOS[2], ALL_VIDEOS[3]];
 
@@ -56,10 +97,11 @@ export default function AboutVideos() {
       <div
         className="about-snapshots-grid auto-scroll-strip"
         ref={scrollRef}
-        onMouseEnter={() => { isHoveredRef.current = true; }}
-        onMouseLeave={() => { isHoveredRef.current = false; }}
-        onTouchStart={() => { isHoveredRef.current = true; }}
-        onTouchEnd={() => { isHoveredRef.current = false; }}
+        onMouseEnter={() => { isPausedRef.current = true; }}
+        onMouseLeave={() => { isPausedRef.current = false; }}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchEnd}
       >
         {videos.map((videoSrc, idx) => (
           <Link

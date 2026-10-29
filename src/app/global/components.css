@@ -797,7 +797,7 @@ h2 i { color: var(--coral); font-weight: 400; }
 .ig-video-card {
   flex: 0 0 250px;
   min-width: 250px;
-  scroll-snap-align: start;
+  /* scroll-snap-align: start; */
   text-decoration: none;
   color: inherit;
   display: block;

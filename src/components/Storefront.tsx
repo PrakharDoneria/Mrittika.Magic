@@ -1,5 +1,7 @@
 "use client";
 
+import { InstagramIcon } from "@/components/InstagramIcon";
+
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ArrowRight, Camera, ChevronDown, Flower2, Heart, Home, Mail, Menu, Palette, Search, ShieldCheck, ShoppingBag, Sparkles, Star, UserRound, X } from "lucide-react";
@@ -308,7 +310,7 @@ export function SiteChrome({
           <Link href="/" className="brand"><img src="/logo/logo.jpeg" alt="Mrittika Magic" /></Link>
           <p>Thoughtful things, happy colors, and a little bit of everyday magic.</p>
           <div style={{ display: "flex", gap: "14px", marginTop: "16px" }}>
-            <a href="https://www.instagram.com/mrittika.magic/" target="_blank" rel="noreferrer" aria-label="Mrittika Magic on Instagram"><Camera size={18} /></a>
+            <a href="https://www.instagram.com/mrittika.magic/" target="_blank" rel="noreferrer" aria-label="Mrittika Magic on Instagram" className="footer-insta-link"><InstagramIcon size={20} /></a>
           </div>
         </div>
         <div>
@@ -340,6 +342,53 @@ export function SiteChrome({
 export function ProductCard({ product, onAdd }: { product: Product; onAdd?: () => void }) {
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+
+  useEffect(() => {
+    function checkSaved() {
+      try {
+        const stored = JSON.parse(localStorage.getItem("mrittika-wishlist") ?? "[]") as Product[];
+        setIsSaved(stored.some((item) => item.id === product.id));
+      } catch {
+        setIsSaved(false);
+      }
+    }
+    checkSaved();
+    window.addEventListener("mrittika-wishlist-updated", checkSaved);
+    window.addEventListener("storage", checkSaved);
+    return () => {
+      window.removeEventListener("mrittika-wishlist-updated", checkSaved);
+      window.removeEventListener("storage", checkSaved);
+    };
+  }, [product.id]);
+
+  function toggleWishlist(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      const stored = JSON.parse(localStorage.getItem("mrittika-wishlist") ?? "[]") as Product[];
+      const nextSaved = !isSaved;
+      const nextItems = nextSaved
+        ? [...stored.filter((item) => item.id !== product.id), product]
+        : stored.filter((item) => item.id !== product.id);
+
+      localStorage.setItem("mrittika-wishlist", JSON.stringify(nextItems));
+      window.dispatchEvent(new Event("mrittika-wishlist-updated"));
+      setIsSaved(nextSaved);
+
+      fetch("/api/wishlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productId: product.id,
+          productTitle: product.title,
+          action: nextSaved ? "add" : "remove",
+        }),
+      }).catch((err) => console.error("Wishlist sync error:", err));
+    } catch (err) {
+      console.error("Failed to toggle wishlist", err);
+    }
+  }
 
   function addProduct(event: React.MouseEvent<HTMLButtonElement>) {
     event.preventDefault();
@@ -373,6 +422,14 @@ export function ProductCard({ product, onAdd }: { product: Product; onAdd?: () =
         <Link href={productPath(product)} aria-label={`View ${product.title}`} className="product-image-link">
           <div className="product-image" style={{ backgroundImage: `url('${product.images[0] ?? ""}')` }} />
         </Link>
+        <button
+          type="button"
+          onClick={toggleWishlist}
+          className={`product-card-wishlist-btn${isSaved ? " is-saved" : ""}`}
+          aria-label={isSaved ? "Remove from wishlist" : "Save to wishlist"}
+        >
+          <Heart size={16} fill={isSaved ? "var(--coral, #e0533c)" : "none"} color={isSaved ? "var(--coral, #e0533c)" : "var(--ink, #1a1a1a)"} />
+        </button>
         {product.stock === 0 && <span className="product-tag">sold out</span>}
 
         {/* Quick-add row: qty stepper + add button */}

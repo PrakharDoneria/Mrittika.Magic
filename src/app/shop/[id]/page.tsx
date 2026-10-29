@@ -3,8 +3,10 @@ import { ArrowLeft, Check, MessageSquare, Sparkles, Star } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getProduct, getCategories, getRelatedProducts } from "@/data/store";
 import { ProductCard, SiteChrome } from "@/components/Storefront";
+import AutoScrollCarousel from "@/components/AutoScrollCarousel";
 import ProductActions from "@/components/ProductActions";
 import ProductGallery from "@/components/ProductGallery";
+import { FormattedMarkdown } from "@/components/FormattedMarkdown";
 import { productPath } from "@/data/product-path";
 import type { Metadata } from "next";
 
@@ -36,7 +38,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
             <p className="eyebrow">{product.category ?? "Mrittika Magic"}</p>
             <h1>{product.title}</h1>
             <strong className="product-detail-price">₹{product.price.toLocaleString("en-IN")}</strong>
-            <p>{product.description || "A small, joyful piece made to bring more magic into your everyday."}</p>
+            <div className="product-description-formatted"><FormattedMarkdown content={product.description || "A small, joyful piece made to bring more magic into your everyday."} /></div>
             <div className="product-detail-note">
               <Check size={16} /> {product.stock > 0 ? `${product.stock} pieces available` : "Currently sold out"}
             </div>
@@ -82,11 +84,11 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                 <h2 style={{ fontSize: "clamp(28px, 4vw, 42px)" }}>You May <i>Also Like</i></h2>
               </div>
             </div>
-            <div className="shop-grid">
+            <AutoScrollCarousel className="related-products-carousel" speed={0.8}>
               {relatedProducts.map((relProduct) => (
                 <ProductCard product={relProduct} key={relProduct.id} />
               ))}
-            </div>
+            </AutoScrollCarousel>
           </section>
         )}
       </main>

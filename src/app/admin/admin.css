@@ -530,3 +530,70 @@
     justify-content: flex-end;
   }
 }
+
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE ADMIN FORM OVERFLOW FIX
+   ═══════════════════════════════════════════════════════════ */
+.admin-panel {
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+.admin-form {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.admin-form input,
+.admin-form textarea,
+.admin-form select {
+  box-sizing: border-box;
+  max-width: 100%;
+  word-break: break-word;
+}
+
+.admin-form label {
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.admin-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  width: 100%;
+}
+
+.admin-submit,
+.admin-cancel {
+  max-width: 100%;
+}
+
+@media (max-width: 768px) {
+  .admin-panel {
+    padding: 20px 16px !important;
+  }
+  .admin-form-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  .admin-form input,
+  .admin-form textarea,
+  .admin-form select {
+    font-size: 16px; /* Prevents auto-zoom on iOS */
+    padding: 10px 12px;
+  }
+  .admin-form-actions {
+    flex-direction: column;
+  }
+  .admin-submit,
+  .admin-cancel {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+}

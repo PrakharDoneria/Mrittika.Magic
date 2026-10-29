@@ -26,11 +26,12 @@ export default function MyArtsManager({ initialPieces = [] }: MyArtsManagerProps
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    const formElement = e.currentTarget;
     setBusy(true);
     setMessage("");
 
     try {
-      const form = new FormData(e.currentTarget);
+      const form = new FormData(formElement);
       const title = String(form.get("title") || "").trim();
       const category = String(form.get("category") || "").trim();
       const year = String(form.get("year") || "2024").trim();
@@ -38,8 +39,9 @@ export default function MyArtsManager({ initialPieces = [] }: MyArtsManagerProps
       const description = String(form.get("description") || "").trim();
       const imageUrlInput = String(form.get("imageUrl") || "").trim();
 
-      const fileInput = e.currentTarget.elements.namedItem("imageFile") as HTMLInputElement | null;
-      const uploadedUrl = await uploadImage(fileInput?.files?.[0] ?? null);
+      const fileInput = formElement.elements.namedItem("imageFile") as HTMLInputElement | null;
+      const fileToUpload = fileInput?.files?.[0] ?? null;
+      const uploadedUrl = await uploadImage(fileToUpload);
 
       const finalImage = uploadedUrl || imageUrlInput || editing?.image || "/media/necklace.jpeg";
 
@@ -55,23 +57,34 @@ export default function MyArtsManager({ initialPieces = [] }: MyArtsManagerProps
 
         if (error) throw new Error(error.message);
         setMessage("Art piece updated successfully!");
+        setPieces((prev) =>
+          prev.map((p) =>
+            p.id === editing.id
+              ? { ...p, title, category, year, badge, description, image: finalImage }
+              : p
+          )
+        );
       } else {
-        const { error } = await supabase.from("my_arts").insert({
+        const { data: inserted, error } = await supabase.from("my_arts").insert({
           title,
           category,
           year,
           badge,
           description,
           image: finalImage,
-        });
+        }).select().single();
 
         if (error) throw new Error(error.message);
         setMessage("New art piece added to studio archive!");
+        if (inserted) {
+          setPieces((prev) => [inserted as ArtPiece, ...prev]);
+        }
       }
 
       setEditing(null);
-      e.currentTarget.reset();
-      window.location.reload();
+      if (formElement && typeof formElement.reset === "function") {
+        formElement.reset();
+      }
     } catch (err) {
       setMessage(err instanceof Error ? err.message : "Error saving art piece");
     } finally {

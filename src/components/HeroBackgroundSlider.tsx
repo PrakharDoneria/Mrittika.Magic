@@ -2,26 +2,31 @@
 
 import { useEffect, useState } from "react";
 
-const HERO_IMAGES = [
-  "/background/pants.jpeg",
+export const HERO_IMAGES = [
+  "/background/banner.png",
   "/media/home/1.jpeg",
   "/media/home/2.jpeg",
   "/media/home/3.jpeg",
   "/media/home/4.jpeg",
   "/media/home/5.jpeg",
-  "/media/buttons.jpeg",
-  "/media/desk.jpeg",
-  "/media/necklace.jpeg",
 ];
 
-export default function HeroBackgroundSlider() {
+export default function HeroBackgroundSlider({
+  onImageChange,
+}: {
+  onImageChange?: (currentImage: string) => void;
+}) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
-    // Smooth crossfade transition every 4.8 seconds
+    onImageChange?.(HERO_IMAGES[currentIndex]);
+  }, [currentIndex, onImageChange]);
+
+  useEffect(() => {
+    // Smooth crossfade transition every 5 seconds
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % HERO_IMAGES.length);
-    }, 4800);
+    }, 5000);
     return () => clearInterval(interval);
   }, []);
 
@@ -40,4 +45,3 @@ export default function HeroBackgroundSlider() {
     </div>
   );
 }
-
