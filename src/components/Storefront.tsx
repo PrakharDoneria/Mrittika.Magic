@@ -3,6 +3,7 @@
 import { InstagramIcon } from "@/components/InstagramIcon";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ArrowRight, Camera, ChevronDown, Flower2, Heart, Home, Mail, Menu, Palette, Search, ShieldCheck, ShoppingBag, Sparkles, Star, UserRound, X } from "lucide-react";
 import type { CartItem, Category, Product } from "@/data/types";
@@ -39,6 +40,7 @@ export function SiteChrome({
   const [cartCount, setCartCount] = useState(0);
   const [scrolled, setScrolled] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const pathname = usePathname();
   useReveal();
 
   useEffect(() => {
@@ -270,11 +272,11 @@ export function SiteChrome({
 
       {/* Mobile Fixed Bottom Navigation Bar */}
       <nav className="mobile-bottom-bar" aria-label="Mobile quick bar">
-        <Link href="/" className="mobile-bar-btn" aria-label="Home">
+        <Link href="/" className={`mobile-bar-btn ${pathname === "/" ? "is-active" : ""}`} aria-label="Home">
           <Home size={20} />
           <span>Home</span>
         </Link>
-        <Link href="/shop" className="mobile-bar-btn" aria-label="Shop">
+        <Link href="/shop" className={`mobile-bar-btn ${pathname.startsWith("/shop") ? "is-active" : ""}`} aria-label="Shop">
           <ShoppingBag size={20} />
           <span>Shop</span>
         </Link>
@@ -289,11 +291,11 @@ export function SiteChrome({
           </div>
           <span>Menu</span>
         </button>
-        <Link href="/wishlist" className="mobile-bar-btn" aria-label="Wishlist">
+        <Link href="/wishlist" className={`mobile-bar-btn ${pathname.startsWith("/wishlist") ? "is-active" : ""}`} aria-label="Wishlist">
           <Heart size={20} />
           <span>Wishlist</span>
         </Link>
-        <Link href="/cart" className="mobile-bar-btn cart-bar-btn" aria-label="Cart">
+        <Link href="/cart" className={`mobile-bar-btn cart-bar-btn ${pathname.startsWith("/cart") ? "is-active" : ""}`} aria-label="Cart">
           <div style={{ position: "relative" }}>
             <ShoppingBag size={20} />
             {cartCount > 0 && <span className="mobile-cart-badge">{cartCount}</span>}
@@ -461,17 +463,21 @@ export function ProductCard({ product, onAdd }: { product: Product; onAdd?: () =
       </div>
       <Link href={productPath(product)} className="product-name">{product.title}</Link>
       <span className="product-meta">{product.category ?? "Mrittika Magic"}</span>
-      {product.review_count ? (
-        <span
-          className="product-rating"
-          aria-label={`${product.rating?.toFixed(1)} out of 5 from ${product.review_count} reviews`}
-        >
-          <span>{Array.from({ length: 5 }, (_, i) => (
-            <Star key={i} size={13} fill={i < Math.round(product.rating ?? 0) ? "currentColor" : "none"} />
-          ))}</span>
-          {product.rating?.toFixed(1)} ({product.review_count})
-        </span>
-      ) : null}
+      <span
+        className="product-rating"
+        aria-label={product.review_count ? `${product.rating?.toFixed(1)} out of 5 from ${product.review_count} reviews` : undefined}
+      >
+        {product.review_count ? (
+          <>
+            <span>{Array.from({ length: 5 }, (_, i) => (
+              <Star key={i} size={13} fill={i < Math.round(product.rating ?? 0) ? "currentColor" : "none"} />
+            ))}</span>
+            {product.rating?.toFixed(1)} ({product.review_count})
+          </>
+        ) : (
+          <span className="product-rating-placeholder" aria-hidden="true" />
+        )}
+      </span>
       <strong>{money.format(product.price)}</strong>
     </article>
   );

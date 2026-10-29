@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 
 export async function POST(request: Request) {
   try {
@@ -93,7 +93,9 @@ export async function POST(request: Request) {
     }
 
     // Insert order in database with status 'Pending'
-    const { error: dbError } = await supabase.from("orders").insert({
+    // Use privileged admin client if available to ensure unauthenticated guest orders succeed
+    const dbClient = createAdminClient() || supabase;
+    const { error: dbError } = await dbClient.from("orders").insert({
       order_id: orderId,
       user_id: user?.id ?? null,
       customer: body.customer,
@@ -106,13 +108,17 @@ export async function POST(request: Request) {
 
     if (dbError) {
       console.error("Database order insertion error:", dbError);
-      return NextResponse.json({ error: dbError.message }, { status: 500 });
+      return NextResponse.json({ 
+        error: dbError.message,
+        hint: "Please run the SQL migration in supabase/schema.sql in your Supabase SQL editor to allow unauthenticated order placement."
+      }, { status: 500 });
     }
 
     return NextResponse.json({
       orderId,
       paymentSessionId: cfData.payment_session_id,
       amount: body.totalAmount,
+      isProd,
     });
   } catch (err) {
     console.error("Checkout POST handler error:", err);

@@ -22,13 +22,8 @@ export default function HeroBackgroundSlider({
     onImageChange?.(HERO_IMAGES[currentIndex]);
   }, [currentIndex, onImageChange]);
 
-  useEffect(() => {
-    // Smooth crossfade transition every 5 seconds
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % HERO_IMAGES.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
+  // Movement / auto-sliding animation is disabled per user request
+  // Slider remains stationary on the initial banner image
 
   return (
     <div className="hero-slider-container" aria-hidden="true">

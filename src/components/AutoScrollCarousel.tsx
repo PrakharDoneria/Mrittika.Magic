@@ -16,23 +16,40 @@ export default function AutoScrollCarousel({
   pauseOnHover = true,
 }: AutoScrollProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const isPausedRef = useRef(false);
-  const resumeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isInteractingRef = useRef(false);
+  const resumeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const posRef = useRef(0);
+  const lastTimeRef = useRef<number | null>(null);
 
   useEffect(() => {
     let animId: number;
+
     const el = containerRef.current;
     if (el) {
       posRef.current = el.scrollLeft;
     }
 
-    const tick = () => {
+    const tick = (currentTime: number) => {
       const target = containerRef.current;
-      if (target && !isPausedRef.current) {
+      if (!target) {
+        animId = requestAnimationFrame(tick);
+        return;
+      }
+
+      if (lastTimeRef.current === null) {
+        lastTimeRef.current = currentTime;
+      }
+      const deltaMs = currentTime - lastTimeRef.current;
+      lastTimeRef.current = currentTime;
+
+      // Cap deltaMs to avoid huge jumps if tab was in background
+      const safeDelta = Math.min(deltaMs, 40);
+      const step = (speed * 60 * safeDelta) / 1000;
+
+      if (!isInteractingRef.current) {
         const maxScroll = target.scrollWidth - target.clientWidth;
         if (maxScroll > 1) {
-          // Sync with manual user scrolling if dragged
+          // Sync with manual touch/trackpad scroll if user swiped
           if (Math.abs(target.scrollLeft - posRef.current) > 3) {
             posRef.current = target.scrollLeft;
           }
@@ -40,27 +57,18 @@ export default function AutoScrollCarousel({
           if (posRef.current >= maxScroll - 1) {
             posRef.current = 0;
             target.scrollLeft = 0;
-            // Also call scrollTo for iOS Safari WebKit engine
-            if (typeof target.scrollTo === "function") {
-              try {
-                target.scrollTo({ left: 0, behavior: "auto" });
-              } catch {}
-            }
           } else {
-            posRef.current += speed;
+            posRef.current += step;
             target.scrollLeft = posRef.current;
-            if (typeof target.scrollTo === "function") {
-              try {
-                target.scrollTo({ left: posRef.current, behavior: "auto" });
-              } catch {}
-            }
           }
         }
       }
+
       animId = requestAnimationFrame(tick);
     };
 
     animId = requestAnimationFrame(tick);
+
     return () => {
       cancelAnimationFrame(animId);
       if (resumeTimeoutRef.current) {
@@ -69,23 +77,31 @@ export default function AutoScrollCarousel({
     };
   }, [speed]);
 
-  const handleTouchStart = () => {
+  const handlePointerDown = () => {
+    if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current);
+    isInteractingRef.current = true;
+  };
+
+  const handlePointerUp = () => {
+    if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current);
+    resumeTimeoutRef.current = setTimeout(() => {
+      if (containerRef.current) {
+        posRef.current = containerRef.current.scrollLeft;
+      }
+      isInteractingRef.current = false;
+    }, 1200);
+  };
+
+  const handleMouseEnter = () => {
     if (pauseOnHover) {
       if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current);
-      isPausedRef.current = true;
+      isInteractingRef.current = true;
     }
   };
 
-  const handleTouchEnd = () => {
+  const handleMouseLeave = () => {
     if (pauseOnHover) {
-      if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current);
-      // Wait 1.2s after user finishes touch before resuming auto-scroll
-      resumeTimeoutRef.current = setTimeout(() => {
-        if (containerRef.current) {
-          posRef.current = containerRef.current.scrollLeft;
-        }
-        isPausedRef.current = false;
-      }, 1200);
+      handlePointerUp();
     }
   };
 
@@ -93,15 +109,18 @@ export default function AutoScrollCarousel({
     <div
       ref={containerRef}
       className={className}
-      onMouseEnter={() => {
-        if (pauseOnHover) isPausedRef.current = true;
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onTouchStart={handlePointerDown}
+      onTouchEnd={handlePointerUp}
+      onTouchCancel={handlePointerUp}
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerUp}
+      style={{
+        WebkitOverflowScrolling: "touch",
+        scrollBehavior: "auto",
       }}
-      onMouseLeave={() => {
-        if (pauseOnHover) isPausedRef.current = false;
-      }}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-      onTouchCancel={handleTouchEnd}
     >
       {children}
     </div>
