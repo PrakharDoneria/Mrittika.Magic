@@ -349,8 +349,8 @@
   .product-card .product-meta,
   .product-card > strong,
   .product-card .product-rating {
-    margin-left: 2px;
-    margin-right: 2px;
+    margin-left: 10px;
+    margin-right: 10px;
   }
   .product-card .product-name {
     margin-top: 8px;

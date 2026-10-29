@@ -331,10 +331,7 @@ export default function CheckoutPage() {
                 <legend>
                   <MapPin size={18} /> Delivery details
                 </legend>
-                <button type="button" className="location-button" onClick={useLocation}>
-                  <MapPin size={15} /> Use my current location
-                </button>
-                {locationMessage && <p className="checkout-hint">{locationMessage}</p>}
+
                 <div className="checkout-grid">
                   <label>
                     Full name

@@ -4547,3 +4547,205 @@ a.outline-button:active {
   color: var(--coral, #e0533c);
   white-space: nowrap;
 }
+
+
+/* ===========================================================
+   LADYBUG FULL PAGE PRELOADER & SCREEN TRANSITION
+   =========================================================== */
+.page-preloader-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background: var(--cream, #fffbf2);
+  z-index: 999999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: all;
+  opacity: 1;
+  transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.4s ease;
+}
+
+.page-preloader-overlay.fade-out {
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.ladybug-loader-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  text-align: center;
+  padding: 24px;
+}
+
+.ladybug-pulse-ring {
+  position: absolute;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 214, 51, 0.45) 0%, rgba(255, 214, 51, 0) 70%);
+  animation: ladybug-glow-pulse 1.8s ease-in-out infinite;
+  z-index: 1;
+}
+
+.ladybug-icon-animated {
+  position: relative;
+  z-index: 2;
+  animation: ladybug-crawl-wobble 2s ease-in-out infinite;
+  filter: drop-shadow(0 8px 14px rgba(43, 29, 34, 0.22));
+}
+
+.ladybug-icon-animated img {
+  display: block;
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+}
+
+.ladybug-loader-caption {
+  position: relative;
+  z-index: 2;
+  margin-top: 18px;
+  font-family: var(--font-hand, "Caveat"), cursive;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--ink, #1a1a1a);
+  letter-spacing: 0.02em;
+  animation: ladybug-text-shimmer 1.8s ease-in-out infinite;
+}
+
+@keyframes ladybug-crawl-wobble {
+  0% {
+    transform: translateY(0px) rotate(0deg) scale(1);
+  }
+  25% {
+    transform: translateY(-8px) rotate(-6deg) scale(1.05);
+  }
+  50% {
+    transform: translateY(-2px) rotate(4deg) scale(1);
+  }
+  75% {
+    transform: translateY(-10px) rotate(-4deg) scale(1.06);
+  }
+  100% {
+    transform: translateY(0px) rotate(0deg) scale(1);
+  }
+}
+
+@keyframes ladybug-glow-pulse {
+  0%, 100% {
+    transform: scale(0.9);
+    opacity: 0.35;
+  }
+  50% {
+    transform: scale(1.45);
+    opacity: 0.85;
+  }
+}
+
+@keyframes ladybug-text-shimmer {
+  0%, 100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* ===========================================================
+   SHOP & WISHLIST PRODUCT CARD BREATHING ROOM & COMPACT SIZING
+   =========================================================== */
+/* Breathing room for /shop product boxes so text is never glued to edges */
+.shop-grid .product-card,
+.product-card {
+  box-sizing: border-box;
+}
+
+.shop-grid .product-card .product-name,
+.shop-grid .product-card .product-meta,
+.shop-grid .product-card > strong,
+.shop-grid .product-card .product-rating {
+  margin-left: 14px !important;
+  margin-right: 14px !important;
+}
+
+@media (max-width: 768px) {
+  .shop-grid .product-card .product-name,
+  .shop-grid .product-card .product-meta,
+  .shop-grid .product-card > strong,
+  .shop-grid .product-card .product-rating {
+    margin-left: 10px !important;
+    margin-right: 10px !important;
+  }
+}
+
+/* Wishlist Product Grid - Exact Same Compact Sizing & Layout as /shop */
+.wishlist-products-container {
+  max-width: 1320px !important;
+  margin: 0 auto !important;
+}
+
+.wishlist-grid.shop-grid,
+.wishlist-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)) !important;
+  gap: 28px !important;
+  border-top: none !important;
+  padding-top: 0 !important;
+}
+
+.wishlist-grid .product-card {
+  max-width: 340px !important;
+  width: 100% !important;
+  margin: 0 auto !important;
+  border-radius: var(--radius-md) !important;
+  background: #fff !important;
+  border: 2px solid var(--ink) !important;
+  box-shadow: 3px 3px 0 var(--ink) !important;
+}
+
+.wishlist-grid .product-card .product-visual {
+  border-radius: var(--radius-md) var(--radius-md) 0 0 !important;
+  border: none !important;
+  aspect-ratio: 1 / 1 !important;
+}
+
+.wishlist-grid .product-card .product-name,
+.wishlist-grid .product-card .product-meta,
+.wishlist-grid .product-card > strong,
+.wishlist-grid .product-card .product-rating {
+  margin-left: 14px !important;
+  margin-right: 14px !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+@media (max-width: 768px) {
+  .wishlist-grid.shop-grid,
+  .wishlist-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 16px 10px !important;
+  }
+  .wishlist-grid .product-card {
+    max-width: 100% !important;
+  }
+  .wishlist-grid .product-card .product-name,
+  .wishlist-grid .product-card .product-meta,
+  .wishlist-grid .product-card > strong,
+  .wishlist-grid .product-card .product-rating {
+    margin-left: 10px !important;
+    margin-right: 10px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .wishlist-grid.shop-grid,
+  .wishlist-grid {
+    gap: 14px 8px !important;
+  }
+}

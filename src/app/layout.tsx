@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { DM_Sans, Playfair_Display, Caveat, Lobster, Bree_Serif, Playball, Poppins } from "next/font/google";
+import PageLoader from "@/components/PageLoader";
 import "./global/index.css";
 
 const body = DM_Sans({ variable: "--font-body", subsets: ["latin"] });
@@ -15,6 +17,7 @@ const heroWelcome = Bree_Serif({ weight: "400", variable: "--font-hero-welcome",
 const heroTagline = Playball({ weight: "400", variable: "--font-hero-tagline", subsets: ["latin"] });
 // Buttons: Poppins (400, 500)
 const heroButtons = Poppins({ weight: ["400", "500"], variable: "--font-hero-buttons", subsets: ["latin"] });
+
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://mrittika-magic.com"),
   title: { default: "Mrittika Magic — Handmade jewellery & tiny joys", template: "%s | Mrittika Magic" },
@@ -49,12 +52,16 @@ export const metadata: Metadata = {
     images: ["/brand/og-image.jpg"],
   },
 };
+
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" data-scroll-behavior="smooth">
       <body
         className={`${body.variable} ${display.variable} ${handwritten.variable} ${heroMainLogo.variable} ${heroWelcome.variable} ${heroTagline.variable} ${heroButtons.variable}`}
       >
+        <Suspense fallback={null}>
+          <PageLoader />
+        </Suspense>
         {children}
       </body>
     </html>
