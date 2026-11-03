@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import Image from "next/image";
 
@@ -14,12 +14,11 @@ export default function PageLoader() {
   useEffect(() => {
     const handleReady = () => {
       setClosing(true);
-      setTimeout(() => setLoading(false), 450);
+      setTimeout(() => setLoading(false), 250);
     };
 
     if (document.readyState === "complete") {
-      // Delay slightly for smooth perceived animation
-      const timer = setTimeout(handleReady, 350);
+      const timer = setTimeout(handleReady, 100);
       return () => clearTimeout(timer);
     } else {
       window.addEventListener("load", handleReady);
@@ -30,12 +29,15 @@ export default function PageLoader() {
   // Listen to route changes (when navigation finishes)
   useEffect(() => {
     // When pathname or search changes, momentarily dismiss loader smoothly
-    setClosing(true);
+    const closingTimer = setTimeout(() => setClosing(true), 0);
     const timer = setTimeout(() => {
       setLoading(false);
-    }, 400);
+    }, 250);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(closingTimer);
+      clearTimeout(timer);
+    };
   }, [pathname, searchParams]);
 
   // Intercept click on standard navigation links to trigger loading transition

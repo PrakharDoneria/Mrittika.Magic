@@ -57,7 +57,42 @@ export default function CartPage() {
         </h1>
         {items.length ? (
           <div className="cart-content">
-            {/* Order Summary placed ABOVE items list */}
+            <div className="cart-items">
+              {items.map((item, index) => (
+                <article className="cart-item" key={item.id}>
+                  <img
+                    src={item.images[0] ?? "/media/buttons.jpeg"}
+                    alt={item.title}
+                    width={120}
+                    height={120}
+                    loading={index === 0 ? "eager" : "lazy"}
+                    fetchPriority={index === 0 ? "high" : "low"}
+                    decoding="async"
+                  />
+                  <div>
+                    <h2>{item.title}</h2>
+                    <p>₹{item.price.toLocaleString("en-IN")}</p>
+                    <div className="cart-quantity">
+                      <button onClick={() => update(item.id, -1)} aria-label="Decrease quantity">
+                        <Minus size={14} />
+                      </button>
+                      <span>{item.quantity}</span>
+                      <button onClick={() => update(item.id, 1)} aria-label="Increase quantity">
+                        <Plus size={14} />
+                      </button>
+                      <button
+                        onClick={() => update(item.id, -item.quantity)}
+                        className="cart-remove"
+                        aria-label="Remove item"
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+
             <aside className="cart-summary">
               <div className="cart-summary-header">
                 <ShoppingBag size={24} />
@@ -90,35 +125,6 @@ export default function CartPage() {
                 <span>Handmade with care • Safe & verified checkout</span>
               </div>
             </aside>
-
-            {/* Items list */}
-            <div className="cart-items">
-              {items.map((item) => (
-                <article className="cart-item" key={item.id}>
-                  <img src={item.images[0] ?? "/media/buttons.jpeg"} alt={item.title} />
-                  <div>
-                    <h2>{item.title}</h2>
-                    <p>₹{item.price.toLocaleString("en-IN")}</p>
-                    <div className="cart-quantity">
-                      <button onClick={() => update(item.id, -1)} aria-label="Decrease quantity">
-                        <Minus size={14} />
-                      </button>
-                      <span>{item.quantity}</span>
-                      <button onClick={() => update(item.id, 1)} aria-label="Increase quantity">
-                        <Plus size={14} />
-                      </button>
-                      <button
-                        onClick={() => update(item.id, -item.quantity)}
-                        className="cart-remove"
-                        aria-label="Remove item"
-                      >
-                        <Trash2 size={15} />
-                      </button>
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
           </div>
         ) : (
           <section className="cart-empty">

@@ -4564,7 +4564,7 @@ a.outline-button:active {
   justify-content: center;
   pointer-events: all;
   opacity: 1;
-  transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.4s ease;
+  transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.25s ease;
 }
 
 .page-preloader-overlay.fade-out {

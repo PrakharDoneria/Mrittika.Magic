@@ -607,7 +607,7 @@
   .product-detail-note { margin: 16px 0; }
   .product-actions { gap: 12px; margin-top: 22px; }
   .product-add-button { min-width: 160px; flex: 1; }
-  .cart-summary { order: -1; }
+  .cart-summary { order: auto; }
   .checkout-page, .orders-page, .policy-page { margin-top: 40px; padding-inline: 16px; }
   .checkout-layout { grid-template-columns: 1fr; }
   .checkout-summary { order: -1; }
