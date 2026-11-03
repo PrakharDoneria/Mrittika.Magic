@@ -4749,3 +4749,123 @@ a.outline-button:active {
     gap: 14px 8px !important;
   }
 }
+
+
+/* ===========================================================
+   MAIL CLUB STORY LETTER SECTION
+   =========================================================== */
+.mail-hero-tagline {
+  font-family: var(--font-hand, "Caveat"), cursive;
+  font-size: clamp(20px, 2.6vw, 26px) !important;
+  color: var(--ink);
+  margin-top: 12px;
+  line-height: 1.4;
+  opacity: 0.95;
+}
+
+.mail-club-story-section {
+  max-width: 860px;
+  margin: -30px auto 40px;
+  padding: 0 24px;
+  position: relative;
+  z-index: 2;
+}
+
+.mail-story-letter {
+  background: #ffffff;
+  border: 2.5px solid var(--ink);
+  border-radius: var(--radius-lg);
+  box-shadow: 6px 6px 0 var(--yellow, #ffd633), 6px 6px 0 2.5px var(--ink);
+  padding: 44px 48px;
+  position: relative;
+  color: var(--ink);
+}
+
+.mail-story-stamp {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  font-family: monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  font-weight: 800;
+  color: var(--coral, #e0533c);
+  border: 1.5px dashed var(--coral, #e0533c);
+  padding: 4px 10px;
+  border-radius: 4px;
+  transform: rotate(4deg);
+}
+
+.mail-story-lead {
+  font-family: var(--font-display), serif;
+  font-size: clamp(19px, 2.2vw, 23px);
+  line-height: 1.5;
+  color: var(--ink);
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+
+.mail-story-letter p {
+  font-size: 15.5px;
+  line-height: 1.75;
+  color: var(--ink);
+  margin-bottom: 18px;
+  opacity: 0.92;
+}
+
+.mail-story-highlight {
+  background: var(--cream, #fffbf2);
+  border: 2px dashed var(--ink);
+  border-radius: var(--radius-md);
+  padding: 20px 24px;
+  margin: 24px 0;
+  box-shadow: 3px 3px 0 var(--pink, #ffc2d1);
+}
+
+.mail-story-highlight .highlight-lead {
+  font-family: var(--font-display), serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--coral, #e0533c);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.mail-story-highlight p:last-child {
+  margin-bottom: 0;
+}
+
+.mail-story-closing {
+  font-size: 16px !important;
+  font-style: italic;
+  padding-top: 12px;
+  border-top: 1.5px solid rgba(26, 26, 26, 0.12);
+  margin-top: 24px;
+  margin-bottom: 0 !important;
+  color: var(--ink);
+}
+
+@media (max-width: 768px) {
+  .mail-club-story-section {
+    margin-top: -16px;
+    padding: 0 16px;
+  }
+  .mail-story-letter {
+    padding: 30px 22px;
+    box-shadow: 4px 4px 0 var(--yellow, #ffd633), 4px 4px 0 2px var(--ink);
+  }
+  .mail-story-stamp {
+    position: static;
+    display: inline-block;
+    margin-bottom: 16px;
+    transform: none;
+  }
+  .mail-story-lead {
+    font-size: 17.5px;
+  }
+  .mail-story-letter p {
+    font-size: 14.5px;
+  }
+}

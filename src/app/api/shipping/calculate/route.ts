@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
+import { getDelhiveryHeaders } from "@/lib/delhivery";
 
 const ORIGIN_PIN = "801503"; // Mrittika Magic origin pincode
 
 export async function POST(request: Request) {
   try {
+    const delhiveryHeaders = await getDelhiveryHeaders();
     const body = (await request.json()) as { destinationPin?: string; weight?: number };
     const destinationPin = (body.destinationPin || "").trim().replace(/\D/g, "");
 
@@ -26,6 +28,7 @@ export async function POST(request: Request) {
         headers: {
           "Content-Type": "application/json",
           "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+          ...delhiveryHeaders,
         },
         body: JSON.stringify({
           requests: [
@@ -71,8 +74,13 @@ export async function POST(request: Request) {
       try {
         const postalData = await postalRes.value.json();
         if (Array.isArray(postalData) && postalData[0]?.Status === "Success") {
-          const rawOffices = postalData[0].PostOffice || [];
-          postOffices = rawOffices.map((po: any) => ({
+          const rawOffices = (postalData[0].PostOffice || []) as Array<{
+            Name: string;
+            District: string;
+            State: string;
+            DeliveryStatus: string;
+          }>;
+          postOffices = rawOffices.map((po) => ({
             name: po.Name,
             district: po.District,
             state: po.State,
@@ -87,23 +95,35 @@ export async function POST(request: Request) {
     }
 
     // Parse Delhivery rates
-    let surfaceRate = 68;
-    let expressRate = 93;
+    if (delhiveryRes.status === "rejected" || !delhiveryRes.value.ok) {
+      const status = delhiveryRes.status === "fulfilled" ? delhiveryRes.value.status : "unavailable";
+      console.error("Delhivery rate calculation failed:", status);
+      return NextResponse.json(
+        { error: "Delhivery delivery rates are temporarily unavailable. Please try again." },
+        { status: 502 }
+      );
+    }
+
+    let surfaceRate: number | null = null;
+    let expressRate: number | null = null;
     let zone = "D1";
 
-    if (delhiveryRes.status === "fulfilled" && delhiveryRes.value.ok) {
-      try {
-        const dlvData = await delhiveryRes.value.json();
-        const responses = Array.isArray(dlvData?.responses) ? dlvData.responses : [];
-        const surface = responses.find((r: { id?: string }) => r.id === "dlv_SURFACE");
-        const express = responses.find((r: { id?: string }) => r.id === "dlv_EXPRESS");
+    try {
+      const dlvData = await delhiveryRes.value.json();
+      const responses = Array.isArray(dlvData?.responses) ? dlvData.responses : [];
+      const surface = responses.find((r: { id?: string }) => r.id === "dlv_SURFACE");
+      const express = responses.find((r: { id?: string }) => r.id === "dlv_EXPRESS");
 
-        if (surface?.total_amount) surfaceRate = Math.round(Number(surface.total_amount));
-        if (express?.total_amount) expressRate = Math.round(Number(express.total_amount));
-        if (surface?.zone) zone = surface.zone;
-      } catch (e) {
-        console.warn("Could not parse Delhivery response:", e);
-      }
+      if (surface?.total_amount) surfaceRate = Math.round(Number(surface.total_amount));
+      if (express?.total_amount) expressRate = Math.round(Number(express.total_amount));
+      if (surface?.zone) zone = surface.zone;
+    } catch (error) {
+      console.error("Could not parse Delhivery response:", error);
+      return NextResponse.json({ error: "Invalid delivery rate response." }, { status: 502 });
+    }
+
+    if (surfaceRate === null && expressRate === null) {
+      return NextResponse.json({ error: "No Delhivery service is available for this pincode." }, { status: 422 });
     }
 
     return NextResponse.json({
@@ -118,7 +138,7 @@ export async function POST(request: Request) {
           id: "dlv_SURFACE",
           mode: "SURFACE",
           title: "Standard Surface Delivery",
-          amount: surfaceRate,
+          amount: surfaceRate ?? expressRate,
           estimatedDays: "4-6 business days",
           zone,
         },
@@ -126,7 +146,7 @@ export async function POST(request: Request) {
           id: "dlv_EXPRESS",
           mode: "EXPRESS",
           title: "Express Air Delivery",
-          amount: expressRate,
+          amount: expressRate ?? surfaceRate,
           estimatedDays: "2-3 business days",
           zone,
         },
@@ -134,20 +154,9 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error("Shipping rate calculation failed:", error);
-    return NextResponse.json(
-      {
-        success: true,
-        destinationPin: "801503",
-        rates: [
-          {
-            id: "dlv_SURFACE",
-            mode: "SURFACE",
-            title: "Standard Surface Delivery",
-            amount: 68,
-          },
-        ],
-      },
-      { status: 200 }
-    );
+    const message = error instanceof Error && error.message === "DELHIVERY_API_KEY is not configured."
+      ? "Delhivery shipping is not configured."
+      : "Could not calculate delivery rates. Please try again.";
+    return NextResponse.json({ error: message }, { status: 503 });
   }
 }

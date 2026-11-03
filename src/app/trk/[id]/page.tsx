@@ -1,11 +1,24 @@
 import Link from "next/link";
-import { ArrowLeft, CheckCircle2, Clock, ExternalLink, MapPin, Package, ShieldCheck, Truck } from "lucide-react";
+import { ArrowLeft, Clock, ExternalLink, MapPin, Package, Truck } from "lucide-react";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getDelhiveryTracking } from "@/lib/delhivery";
 import { SiteChrome } from "@/components/Storefront";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+
+interface TrackingOrder {
+  order_id: string;
+  created_at: string;
+  payment_status: string;
+  fulfillment_status: string;
+  customer: Record<string, string> | null;
+  items: Array<{ title: string; quantity: number; price: number }> | null;
+  tracking_number: string | null;
+  courier_name: string | null;
+  total_amount: number;
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -20,7 +33,7 @@ export default async function TrackingPage({ params }: { params: Promise<{ id: s
   const decodedId = decodeURIComponent(id).trim();
 
   const supabase = await createClient();
-  let order: any = null;
+  let order: TrackingOrder | null = null;
 
   if (supabase) {
     // Look up by order_id (e.g. MRIT-...) or by uuid id
@@ -29,7 +42,7 @@ export default async function TrackingPage({ params }: { params: Promise<{ id: s
       .select("*")
       .or(`order_id.eq.${decodedId},id.eq.${decodedId}`)
       .maybeSingle();
-    order = data;
+    order = data as TrackingOrder | null;
   }
 
   if (!order) {
@@ -38,6 +51,14 @@ export default async function TrackingPage({ params }: { params: Promise<{ id: s
 
   const customer = (order.customer ?? {}) as Record<string, string>;
   const items = (order.items ?? []) as Array<{ title: string; quantity: number; price: number }>;
+  let courierTracking = null;
+  if (order.tracking_number && (order.courier_name || "Delhivery").toLowerCase().includes("delhivery")) {
+    try {
+      courierTracking = await getDelhiveryTracking(String(order.tracking_number));
+    } catch (error) {
+      console.error("Could not load courier tracking:", error);
+    }
+  }
 
   const steps = [
     { label: "Order Placed", desc: "Studio confirmed & preparing batch" },
@@ -157,6 +178,13 @@ export default async function TrackingPage({ params }: { params: Promise<{ id: s
                 <strong style={{ fontSize: 16, display: "block", marginBottom: 12, letterSpacing: ".05em" }}>
                   {order.tracking_number}
                 </strong>
+                {courierTracking && (
+                  <p style={{ margin: "0 0 12px", fontSize: 13 }}>
+                    <strong>{courierTracking.status}</strong>
+                    {courierTracking.location ? ` · ${courierTracking.location}` : ""}
+                    {courierTracking.statusDateTime ? ` · ${new Date(courierTracking.statusDateTime).toLocaleString("en-IN")}` : ""}
+                  </p>
+                )}
                 <a
                   className="solid-button"
                   href={`https://www.delhivery.com/track/package/${order.tracking_number}`}
