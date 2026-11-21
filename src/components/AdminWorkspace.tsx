@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { createClient } from "@/lib/supabase/browser";
+import { optimizeFilesForUpload } from "@/lib/image-optimizer";
 import { SiteChrome } from "./Storefront";
 import AnalyticsDashboard from "./AnalyticsDashboard";
 import PrivacyPolicyEditor from "./PrivacyPolicyEditor";
@@ -92,7 +93,15 @@ export default function AdminWorkspace({
   async function uploadFiles(files: FileList | null) {
     if (!files?.length) return [];
     const urls: string[] = [];
-    for (const file of Array.from(files)) {
+    // Optimize images with algorithm before uploading to Supabase
+    const optimizedFiles = await optimizeFilesForUpload(files, {
+      maxWidth: 1600,
+      maxHeight: 1600,
+      quality: 0.85,
+      format: "image/webp",
+    });
+
+    for (const file of optimizedFiles) {
       const path = `admin/${crypto.randomUUID()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "-")}`;
       const upload = await supabase.storage.from("media").upload(path, file, { upsert: false, contentType: file.type });
       if (upload.error) throw new Error(upload.error.message);

@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { createClient } from "@/lib/supabase/browser";
+import { optimizeImageForUpload } from "@/lib/image-optimizer";
 import { Palette, Plus, Trash2, Edit2, Sparkles, ExternalLink } from "lucide-react";
 import type { ArtPiece } from "@/data/types";
 
@@ -18,8 +19,15 @@ export default function MyArtsManager({ initialPieces = [] }: MyArtsManagerProps
 
   async function uploadImage(file: File | null) {
     if (!file) return null;
-    const path = `arts/${crypto.randomUUID()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "-")}`;
-    const upload = await supabase.storage.from("media").upload(path, file, { upsert: false, contentType: file.type });
+    // Optimize artwork with smart compression before uploading to Supabase
+    const optimized = await optimizeImageForUpload(file, {
+      maxWidth: 1800,
+      maxHeight: 1800,
+      quality: 0.88,
+      format: "image/webp",
+    });
+    const path = `arts/${crypto.randomUUID()}-${optimized.name.replace(/[^a-zA-Z0-9._-]/g, "-")}`;
+    const upload = await supabase.storage.from("media").upload(path, optimized, { upsert: false, contentType: optimized.type });
     if (upload.error) throw new Error(upload.error.message);
     return supabase.storage.from("media").getPublicUrl(path).data.publicUrl;
   }

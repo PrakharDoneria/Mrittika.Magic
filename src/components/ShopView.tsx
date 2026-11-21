@@ -6,8 +6,56 @@ import { ChevronLeft, ChevronRight, Search, SlidersHorizontal } from "lucide-rea
 import type { Category, Product } from "@/data/types";
 import { ProductCard } from "./Storefront";
 import { trackEvent } from "@/lib/analytics";
+import { fetchWithSWR, cacheMediaUrl } from "@/lib/client-cache";
 
-export default function ShopView({ products, categories: supabaseCategories, page, total, selectedCategory }: { products: Product[]; categories: Category[]; page: number; total: number; selectedCategory?: string }) {
+export default function ShopView({
+  products: initialProducts,
+  categories: initialCategories,
+  page,
+  total: initialTotal,
+  selectedCategory,
+}: {
+  products: Product[];
+  categories: Category[];
+  page: number;
+  total: number;
+  selectedCategory?: string;
+}) {
+  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const [total, setTotal] = useState<number>(initialTotal);
+  const [supabaseCategories, setSupabaseCategories] = useState<Category[]>(initialCategories);
+
+  // Background SWR sync for instant 0.0ms load of products & categories
+  useEffect(() => {
+    const cacheKey = `shop_products_${selectedCategory || "all"}_page_${page}`;
+    fetchWithSWR<{ products: Product[]; categories: Category[]; count: number }>(
+      cacheKey,
+      async () => {
+        const query = new URLSearchParams();
+        if (selectedCategory && selectedCategory !== "All") query.set("category", selectedCategory);
+        query.set("page", String(page));
+        query.set("limit", "12");
+        const res = await fetch(`/api/products?${query.toString()}`);
+        if (!res.ok) throw new Error("Shop fetch failed");
+        return res.json();
+      },
+      10 * 60 * 1000
+    )
+      .then((data) => {
+        if (data?.products?.length) {
+          setProducts(data.products);
+          if (data.count !== undefined) setTotal(data.count);
+          data.products.forEach((p) => {
+            if (p.images?.[0]) cacheMediaUrl(p.images[0]);
+          });
+        }
+        if (data?.categories?.length) {
+          setSupabaseCategories(data.categories);
+        }
+      })
+      .catch(() => {});
+  }, [selectedCategory, page]);
+
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState(selectedCategory ?? "All");
   const router = useRouter();

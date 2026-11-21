@@ -3,6 +3,7 @@
 import { ChangeEvent, FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/browser";
+import { optimizeImageForUpload } from "@/lib/image-optimizer";
 import styles from "@/app/profile/profile.module.css";
 
 export default function ProfileForm({ userId, email, initialName, initialAvatar }: { userId: string; email: string; initialName: string; initialAvatar: string | null }) {
@@ -11,11 +12,13 @@ export default function ProfileForm({ userId, email, initialName, initialAvatar 
     const file = event.target.files?.[0];
     if (file) { setPreview(URL.createObjectURL(file)); setPreviewOpen(true); }
   }
+
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setSaving(true); setMessage("");
     const supabase = createClient(); const file = (event.currentTarget.elements.namedItem("avatar") as HTMLInputElement).files?.[0]; let avatarUrl = avatar;
     if (file) {
-      const path = `profiles/${userId}/${crypto.randomUUID()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "-")}`; const upload = await supabase.storage.from("media").upload(path, file, { upsert: true, contentType: file.type });
+      const optimized = await optimizeImageForUpload(file, { maxWidth: 600, maxHeight: 600, quality: 0.85, format: "image/webp" });
+      const path = `profiles/${userId}/${crypto.randomUUID()}-${optimized.name.replace(/[^a-zA-Z0-9._-]/g, "-")}`; const upload = await supabase.storage.from("media").upload(path, optimized, { upsert: true, contentType: optimized.type });
       if (upload.error) { setMessage(upload.error.message); setSaving(false); return; }
       avatarUrl = supabase.storage.from("media").getPublicUrl(path).data.publicUrl; setAvatar(avatarUrl); setPreview(avatarUrl);
     }

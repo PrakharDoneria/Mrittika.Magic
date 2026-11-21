@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowRight, BadgeCheck, Flower2, HandHeart, MessageSquareHeart, Star } from "lucide-react";
 import { ProductCard, SiteChrome } from "@/components/Storefront";
 import InstagramFeed from "@/components/InstagramFeed";
@@ -9,6 +9,7 @@ import FeedbackSection from "@/components/FeedbackSection";
 import AutoScrollCarousel from "@/components/AutoScrollCarousel";
 import HeroBackgroundSlider from "@/components/HeroBackgroundSlider";
 import type { Category, Product } from "@/data/types";
+import { fetchWithSWR, cacheMediaUrl } from "@/lib/client-cache";
 
 interface DisplayReview {
   id: string;
@@ -24,12 +25,51 @@ interface HomePageClientProps {
 }
 
 export default function HomePageClient({
-  categories,
-  products,
+  categories: initialCategories,
+  products: initialProducts,
   displayReviews,
 }: HomePageClientProps) {
+  const [categories, setCategories] = useState<Category[]>(initialCategories);
+  const [products, setProducts] = useState<Product[]>(initialProducts);
   const [activeHeroImage, setActiveHeroImage] = useState<string>("/background/banner.png");
   const isBanner = activeHeroImage === "/background/banner.png";
+
+  // Instant 0.0ms load from localStorage SWR cache with background database sync
+  useEffect(() => {
+    // 1. Sync & cache products in background
+    fetchWithSWR<{ products: Product[]; categories: Category[] }>(
+      "home_catalog",
+      async () => {
+        const res = await fetch("/api/products?limit=12");
+        if (!res.ok) throw new Error("Catalog fetch failed");
+        return res.json();
+      },
+      15 * 60 * 1000 // 15 mins TTL
+    )
+      .then((cachedOrFresh) => {
+        if (cachedOrFresh?.products?.length) {
+          setProducts(cachedOrFresh.products);
+          // Precache product visual media in browser CacheStorage
+          cachedOrFresh.products.forEach((p) => {
+            if (p.images?.[0]) cacheMediaUrl(p.images[0]);
+          });
+        }
+        if (cachedOrFresh?.categories?.length) {
+          setCategories(cachedOrFresh.categories);
+        }
+      })
+      .catch(() => {});
+
+    // Listen to background updates
+    const handleUpdate = (e: Event) => {
+      const customEvent = e as CustomEvent<{ products: Product[]; categories: Category[] }>;
+      if (customEvent.detail?.products?.length) {
+        setProducts(customEvent.detail.products);
+      }
+    };
+    window.addEventListener("mrittika-cache-updated:home_catalog", handleUpdate);
+    return () => window.removeEventListener("mrittika-cache-updated:home_catalog", handleUpdate);
+  }, []);
 
   return (
     <SiteChrome categories={categories}>
