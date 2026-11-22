@@ -4,7 +4,14 @@ import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
-const ALL_VIDEOS = Array.from({ length: 26 }, (_, i) => `/videos/${i + 1}.mp4`);
+// Safe curated lightweight 4-5 videos excluding 6, 17, 18
+const ABOUT_ALLOWED_VIDEOS = [
+  "/videos/9.mp4",
+  "/videos/23.mp4",
+  "/videos/20.mp4",
+  "/videos/13.mp4",
+  "/videos/12.mp4",
+];
 
 const SNAPSHOT_BADGES = [
   "Curious forms ✦",
@@ -12,24 +19,49 @@ const SNAPSHOT_BADGES = [
   "Joyful palette ❀",
   "Clay creations ✦",
   "Studio stories ✿",
-  "Made by hands ❀",
 ];
 
 export default function AboutVideos() {
   const [selectedVideos, setSelectedVideos] = useState<string[]>([]);
+  const [isIntersecting, setIsIntersecting] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const isPausedRef = useRef(false);
   const resumeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const posRef = useRef(0);
 
   useEffect(() => {
-    // Pick 6 random distinct videos for rich continuous scrolling
-    const shuffled = [...ALL_VIDEOS].sort(() => 0.5 - Math.random());
-    setSelectedVideos(shuffled.slice(0, 6));
+    const el = sectionRef.current;
+    if (!el) return;
+
+    if (!("IntersectionObserver" in window)) {
+      setIsIntersecting(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsIntersecting(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "250px" }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
   }, []);
+
+  useEffect(() => {
+    if (!isIntersecting) return;
+    setSelectedVideos(ABOUT_ALLOWED_VIDEOS);
+  }, [isIntersecting]);
 
   // Continuous smooth auto-scroll with Apple / iOS WebKit support
   useEffect(() => {
+    if (!selectedVideos.length) return;
+
     let animId: number;
     const speed = 0.75;
     const el = scrollRef.current;
@@ -90,10 +122,8 @@ export default function AboutVideos() {
     }, 1200);
   };
 
-  const videos = selectedVideos.length > 0 ? selectedVideos : [ALL_VIDEOS[0], ALL_VIDEOS[1], ALL_VIDEOS[2], ALL_VIDEOS[3]];
-
   return (
-    <section className="about-snapshots-section">
+    <section ref={sectionRef} className="about-snapshots-section">
       <div
         className="about-snapshots-grid auto-scroll-strip"
         ref={scrollRef}
@@ -103,28 +133,33 @@ export default function AboutVideos() {
         onTouchEnd={handleTouchEnd}
         onTouchCancel={handleTouchEnd}
       >
-        {videos.map((videoSrc, idx) => (
-          <Link
-            href="/shop"
+        {selectedVideos.map((videoSrc, idx) => (
+          <div
+            className="snapshot-card"
             key={`${videoSrc}-${idx}`}
-            className="about-snapshot-card"
-            title="Explore in shop"
           >
-            <video
-              src={videoSrc}
-              autoPlay
-              muted
-              loop
-              playsInline
-              disablePictureInPicture
-              controls={false}
-            />
-            <span className="about-snapshot-badge">{SNAPSHOT_BADGES[idx % SNAPSHOT_BADGES.length]}</span>
-            <div className="about-snapshot-hover">
-              <span className="about-snapshot-btn">View in shop <ArrowRight size={13} /></span>
+            <div className="snapshot-video-wrap">
+              <video
+                src={videoSrc}
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="metadata"
+                disablePictureInPicture
+                controls={false}
+              />
+              <span className="snapshot-badge">
+                {SNAPSHOT_BADGES[idx % SNAPSHOT_BADGES.length]}
+              </span>
             </div>
-          </Link>
+          </div>
         ))}
+      </div>
+      <div className="about-snapshots-action">
+        <Link href="/shop" className="solid-button">
+          Explore Our Creations <ArrowRight size={15} />
+        </Link>
       </div>
     </section>
   );

@@ -7,41 +7,12 @@ import Image from "next/image";
 export default function PageLoader() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [closing, setClosing] = useState(false);
 
-  // Initial full page load listener
+  // Instant display without blocking initial DOM render
   useEffect(() => {
-    const handleReady = () => {
-      setClosing(true);
-      setTimeout(() => setLoading(false), 250);
-    };
-
-    if (document.readyState === "complete") {
-      const timer = setTimeout(handleReady, 100);
-      return () => clearTimeout(timer);
-    } else {
-      window.addEventListener("load", handleReady);
-      return () => window.removeEventListener("load", handleReady);
-    }
-  }, []);
-
-  // Listen to route changes (when navigation finishes)
-  useEffect(() => {
-    // When pathname or search changes, momentarily dismiss loader smoothly
-    const closingTimer = setTimeout(() => setClosing(true), 0);
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 250);
-
-    return () => {
-      clearTimeout(closingTimer);
-      clearTimeout(timer);
-    };
-  }, [pathname, searchParams]);
-
-  // Intercept click on standard navigation links to trigger loading transition
-  useEffect(() => {
+    // Only show loader for subsequent client navigations, letting initial page load in 0-1ms
     const handleAnchorClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement | null;
       const anchor = target?.closest("a");
@@ -64,11 +35,9 @@ export default function PageLoader() {
         return;
       }
 
-      // Check if internal route
       try {
         const url = new URL(href, window.location.origin);
         if (url.origin === window.location.origin) {
-          // If going to a different path or search query, activate ladybug loader
           if (url.pathname !== window.location.pathname || url.search !== window.location.search) {
             setClosing(false);
             setLoading(true);
@@ -80,6 +49,18 @@ export default function PageLoader() {
     document.addEventListener("click", handleAnchorClick, true);
     return () => document.removeEventListener("click", handleAnchorClick, true);
   }, []);
+
+  // Dismiss loader on pathname / search change
+  useEffect(() => {
+    if (loading) {
+      setClosing(true);
+      const timer = setTimeout(() => {
+        setLoading(false);
+        setClosing(false);
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+  }, [pathname, searchParams, loading]);
 
   if (!loading) return null;
 

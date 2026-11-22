@@ -2,10 +2,18 @@
 
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
-import { Sparkles, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { InstagramIcon } from "@/components/InstagramIcon";
 
-const ALL_VIDEOS = Array.from({ length: 26 }, (_, i) => `/videos/${i + 1}.mp4`);
+// Explicitly exclude large or unwanted videos: 6, 17, 18, 16, etc.
+// Keep light, high-speed videos
+const ALLOWED_VIDEOS = [
+  "/videos/9.mp4",  // ~1.1MB (fastest)
+  "/videos/23.mp4", // ~1.2MB
+  "/videos/20.mp4", // ~1.6MB
+  "/videos/13.mp4", // ~1.7MB
+  "/videos/12.mp4", // ~2.4MB
+];
 
 const CAPTIONS = [
   "Studio vibes ✦",
@@ -13,9 +21,6 @@ const CAPTIONS = [
   "Clay & magic ❀",
   "Wearable art ✦",
   "Fresh drops ✿",
-  "Joyful imperfections ❀",
-  "From our studio ✦",
-  "Pure magic ✿",
 ];
 
 interface VideoCard {
@@ -27,28 +32,57 @@ interface VideoCard {
 
 export default function InstagramFeed() {
   const [videoCards, setVideoCards] = useState<VideoCard[]>([]);
+  const [isIntersecting, setIsIntersecting] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const isPausedRef = useRef(false);
   const resumeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const posRef = useRef(0);
 
+  // Lazy observe this section so videos only load when near viewport
   useEffect(() => {
-    // Pick 8 random videos from public/videos (1.mp4 to 26.mp4)
-    const shuffled = [...ALL_VIDEOS].sort(() => 0.5 - Math.random());
-    const selected = shuffled.slice(0, 8);
+    const el = sectionRef.current;
+    if (!el) return;
 
-    const cards: VideoCard[] = selected.map((src, idx) => {
-      const cap = CAPTIONS[idx % CAPTIONS.length];
-      return { src, rotation: 0, offsetY: 0, caption: cap };
-    });
+    if (!("IntersectionObserver" in window)) {
+      setIsIntersecting(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsIntersecting(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "250px" } // preload 250px before scrolling into view
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!isIntersecting) return;
+
+    // Load only 4-5 curated light videos, never 6.mp4, 17.mp4, 18.mp4
+    const cards: VideoCard[] = ALLOWED_VIDEOS.map((src, idx) => ({
+      src,
+      rotation: 0,
+      offsetY: 0,
+      caption: CAPTIONS[idx % CAPTIONS.length],
+    }));
 
     setVideoCards(cards);
-  }, []);
+  }, [isIntersecting]);
 
   // Continuous smooth auto-scroll with Apple / iOS WebKit support
   useEffect(() => {
+    if (!videoCards.length) return;
+
     let animId: number;
-    const speed = 0.75; // smooth gentle pixels per frame
+    const speed = 0.75;
     const el = scrollRef.current;
     if (el) {
       posRef.current = el.scrollLeft;
@@ -126,7 +160,7 @@ export default function InstagramFeed() {
   };
 
   return (
-    <section className="ig-section reveal">
+    <section ref={sectionRef} className="ig-section reveal">
       {/* Header with single follow button */}
       <div className="ig-header">
         <div className="ig-header-left">
@@ -173,6 +207,7 @@ export default function InstagramFeed() {
                   muted
                   loop
                   playsInline
+                  preload="metadata"
                   disablePictureInPicture
                   controls={false}
                   className="ig-video-element"
