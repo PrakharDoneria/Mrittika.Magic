@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { InstagramIcon } from "@/components/InstagramIcon";
+import AppleVideo from "@/components/AppleVideo";
 
 // Explicitly exclude large or unwanted videos: 6, 17, 18, 16, etc.
 // Keep light, high-speed videos
@@ -201,17 +202,7 @@ export default function InstagramFeed() {
               title="Click to explore the shop"
             >
               <div className="ig-video-frame">
-                <video
-                  src={card.src}
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  preload="metadata"
-                  disablePictureInPicture
-                  controls={false}
-                  className="ig-video-element"
-                />
+                <AppleVideo src={card.src} className="ig-video-element" />
                 <div className="ig-video-badge">
                   <span>{card.caption}</span>
                 </div>

@@ -3,8 +3,9 @@
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import AppleVideo from "@/components/AppleVideo";
 
-// Safe curated lightweight 4-5 videos excluding 6, 17, 18
+// Curated lightweight 4-5 videos excluding heavy 6, 17, 18
 const ABOUT_ALLOWED_VIDEOS = [
   "/videos/9.mp4",
   "/videos/23.mp4",
@@ -22,46 +23,14 @@ const SNAPSHOT_BADGES = [
 ];
 
 export default function AboutVideos() {
-  const [selectedVideos, setSelectedVideos] = useState<string[]>([]);
-  const [isIntersecting, setIsIntersecting] = useState(false);
-  const sectionRef = useRef<HTMLElement>(null);
+  const [selectedVideos, setSelectedVideos] = useState<string[]>(ABOUT_ALLOWED_VIDEOS);
   const scrollRef = useRef<HTMLDivElement>(null);
   const isPausedRef = useRef(false);
   const resumeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const posRef = useRef(0);
 
-  useEffect(() => {
-    const el = sectionRef.current;
-    if (!el) return;
-
-    if (!("IntersectionObserver" in window)) {
-      setIsIntersecting(true);
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsIntersecting(true);
-          observer.disconnect();
-        }
-      },
-      { rootMargin: "250px" }
-    );
-
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
-    if (!isIntersecting) return;
-    setSelectedVideos(ABOUT_ALLOWED_VIDEOS);
-  }, [isIntersecting]);
-
   // Continuous smooth auto-scroll with Apple / iOS WebKit support
   useEffect(() => {
-    if (!selectedVideos.length) return;
-
     let animId: number;
     const speed = 0.75;
     const el = scrollRef.current;
@@ -122,8 +91,10 @@ export default function AboutVideos() {
     }, 1200);
   };
 
+  const videos = selectedVideos.length > 0 ? selectedVideos : ABOUT_ALLOWED_VIDEOS;
+
   return (
-    <section ref={sectionRef} className="about-snapshots-section">
+    <section className="about-snapshots-section">
       <div
         className="about-snapshots-grid auto-scroll-strip"
         ref={scrollRef}
@@ -133,33 +104,20 @@ export default function AboutVideos() {
         onTouchEnd={handleTouchEnd}
         onTouchCancel={handleTouchEnd}
       >
-        {selectedVideos.map((videoSrc, idx) => (
-          <div
-            className="snapshot-card"
+        {videos.map((videoSrc, idx) => (
+          <Link
+            href="/shop"
             key={`${videoSrc}-${idx}`}
+            className="about-snapshot-card"
+            title="Explore in shop"
           >
-            <div className="snapshot-video-wrap">
-              <video
-                src={videoSrc}
-                autoPlay
-                muted
-                loop
-                playsInline
-                preload="metadata"
-                disablePictureInPicture
-                controls={false}
-              />
-              <span className="snapshot-badge">
-                {SNAPSHOT_BADGES[idx % SNAPSHOT_BADGES.length]}
-              </span>
+            <AppleVideo src={videoSrc} />
+            <span className="about-snapshot-badge">{SNAPSHOT_BADGES[idx % SNAPSHOT_BADGES.length]}</span>
+            <div className="about-snapshot-hover">
+              <span className="about-snapshot-btn">View in shop <ArrowRight size={13} /></span>
             </div>
-          </div>
+          </Link>
         ))}
-      </div>
-      <div className="about-snapshots-action">
-        <Link href="/shop" className="solid-button">
-          Explore Our Creations <ArrowRight size={15} />
-        </Link>
       </div>
     </section>
   );
